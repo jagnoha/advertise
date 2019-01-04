@@ -1,0 +1,3 @@
+rootProject.name = 'advertise'
+
+include ':app'
