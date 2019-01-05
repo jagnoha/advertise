@@ -275,7 +275,7 @@ class AddListing extends Component {
                 brandListFiltered: [],
                 brandSelected: {},
                 condition: "0",
-                conditionDescriptionSelected: [],
+                conditionDescriptionSelected: null,
                 conditionDescription: [],
                 sellInLots: "No",
                 quantityLot: "",

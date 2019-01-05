@@ -26,7 +26,8 @@ const mockData = [
     },
     {
         label: 'NOS',
-        value: 'NOS'
+        value: 'NOS',
+        RNchecked: false,
     },
     {
         label: 'Rebuilt / Remanufactured',
