@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import { locationsFetchData, listingsFetchData, brandsFetchData, ebayMarketplacesFetchData } from '../modules/actions';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import AddListing from './AddListing';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 
 
@@ -102,7 +103,8 @@ import AddListing from './AddListing';
         users: state.users,
         clickedColumn: state.clickedColumn,
         brands: state.brands,
-        urlBase: state.urlBase,      
+        urlBase: state.urlBase,
+              
     };
   };
   

@@ -31,6 +31,75 @@ export function listingDraftUpdated(listingDraft) {
     };
 }
 
+//************************************** 
+
+/*return (dispatch) => {
+    dispatch(locationsIsLoading(true))
+    fetch(url,{
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        }
+    })
+    .then((response) => {
+        
+        dispatch(locationsIsLoading(false));
+        
+        return response.json()
+    
+    })    
+    .then((locations) => dispatch(locationsFetchDataSuccess(locations)))
+    .catch((error) => {
+      console.error(error);
+    });
+  }*/
+
+
+
+//**************************************
+
+export function listingDraftHasErrored(bool){
+    return {
+        type: 'LISTING_DRAFT_HAS_ERRORED',
+        hasErrored: bool
+    };
+}
+
+export function listingDraftIsLoading(bool){
+    return {
+        type: 'LISTING_DRAFT_IS_LOADING',
+        isLoading: bool
+    };
+}
+
+
+
+export function listingAddDatabase(url, listingDraft) {
+    return (dispatch) => {
+    dispatch(listingDraftIsLoading(true))    
+    fetch(url,{
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            //'Accept': 'application/json',
+            //'Content-Type': 'application/json',
+        }
+    })
+    .then((response) => {
+
+        dispatch(listingDraftIsLoading(false));
+        dispatch(listingDraftUpdated(listingDraft));
+
+        return response
+    
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+}
+
+
 export function brandAddDatabase(url, id, value) {
     return (dispatch) => {
     fetch(url,{
@@ -58,6 +127,36 @@ export function addNewBrand(newBrand) {
     return {
         type: 'ADD_NEW_BRAND',
         newBrand
+    };
+}
+
+export function locationAddDatabase(url, id, value) {
+    return (dispatch) => {
+    fetch(url,{
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            //'Accept': 'application/json',
+            //'Content-Type': 'application/json',
+        }
+    })
+    .then((response) => {
+        
+        dispatch(addNewLocation({id, value}));
+        
+        return response
+    
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+}
+
+
+export function addNewLocation(newLocation) {
+    return {
+        type: 'ADD_NEW_LOCATION',
+        newLocation
     };
 }
 

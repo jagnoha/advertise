@@ -25,7 +25,30 @@ const fields = {
     "lastModified": null,
     "ebayAccount": "",
     "status": "offline",
+    "upc": "",
+    "authorId": "0",
 }
+
+export function listingDraftHasErrored(state = false, action) {
+    switch (action.type) {
+        case 'LISTING_DRAFT_HAS_ERRORED':
+            return action.hasErrored;
+
+        default:
+            return state;
+    }
+}
+
+export function listingDraftIsLoading(state = false, action) {
+    switch (action.type) {
+        case 'LISTING_DRAFT_IS_LOADING':
+            return action.isLoading;
+
+        default:
+            return state;
+    }
+}
+
 
 export function listingDraft(state = fields, action) {
     switch (action.type) {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import {Button, Image, StyleSheet, Text, TextInput, View, ToolbarAndroid, ScrollView, Picker} from 'react-native';
 import { locationsFetchData, listingsFetchData, brandsFetchData, 
-       listingDraftUpdated, brandAddDatabase } from '../modules/actions';
+       listingDraftUpdated, brandAddDatabase, locationAddDatabase, addNewLocation, listingAddDatabase } from '../modules/actions';
 const uuidv4 = require('uuid/v4');
 
 
@@ -11,7 +11,8 @@ const uuidv4 = require('uuid/v4');
   import PartNumberList from './PartNumberList';
   import BrandList from './BrandList';
   import ConditionDescription from './ConditionDescription';
-import { newBrand } from '../modules/reducers/newBrand';
+  import Spinner from 'react-native-loading-spinner-overlay';
+  //import { newBrand } from '../modules/reducers/newBrand';
 
 
   //import ImagePicker from 'react-native-image-picker';
@@ -25,9 +26,11 @@ class AddListing extends Component {
         location: "",
         brand: "",
         brandId: "",
+        locationId: "",
         quantity: "1",
         partNumber: "",
         partNumberList: [],
+        upc: "",
         //brandList: [{id:"1",value:"FORD"},{id:"2",value:"FORD MOTORS"},{id:"3", value: "MOTORCRAFT"},{id:4, value: "GM"}],
         //brandList: this.props.brands.map(item => item),
         brandListFiltered: [],
@@ -125,9 +128,18 @@ class AddListing extends Component {
         })
       };
 
+      checkLot = (lotOption) => {
+          if (lotOption === "Pair"){
+              return " ** Pair ** ";
+          } else if (lotOption !== "Pair" && lotOption !== "No"){
+              return " ** " + lotOption + " " + this.state.quantityLot + " ** ";  
+          }
+
+          return " ";
+      }
+
       onPressCreateListing = () => {
             const uuid = uuidv4();
-            //const idBrand = uuidv4();
             let tempBrand = '';
 
             if (this.props.brands.filter(item => item.value.toUpperCase() === this.state.brand.toUpperCase()).length === 0){
@@ -137,20 +149,40 @@ class AddListing extends Component {
                 tempBrand = this.state.brandId;
             }
 
+            
+            let tempLocation = '';
+
+            if (this.state.location !== ""){
+
+                if (this.props.locations.filter(item => item.value.toUpperCase() === this.state.location.toUpperCase()).length === 0){
+                    tempLocation = uuidv4();
+                    this.props.locationAddDatabase(this.props.urlBase + '/addlocation/' + tempLocation + '/' + this.state.location.toUpperCase(), tempLocation, this.state.location);
+                } else {
+                    tempLocation = this.props.locations.filter(item => item.value.toUpperCase() === this.state.location.toUpperCase())[0].id
+                }
+
+            } else {
+                tempLocation = '';
+            }
+
+            
+
+
             const fields = {
                 "sku": uuid,
                 "uuid": uuid,
                 "pictures": [],
                 "quantity": this.state.quantity,
                 "price": "",
-                "title": this.state.title,
+                "title":  this.state.brand + this.checkLot(this.state.sellInLots) + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
                 "brand": tempBrand,
-                "partNumbers": this.state.partNumber,
+                "partNumbers": this.state.partNumberList.map(item => item.partNumber),
+                "upc": this.state.upc,
                 "bestOffer": true,
-                "description": this.state.title,
+                "description": this.state.brand + this.checkLot(this.state.sellInLots) + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
                 "condition": this.state.condition,
-                "conditionDescription": this.state.conditionDescription,
-                "location": "",
+                "conditionDescription": this.state.conditionDescription.map(item => item),
+                "location": tempLocation === '' ? [] : [tempLocation],
                 "freeShipping": true,
                 "domestic": "0",
                 "international": "0",
@@ -163,8 +195,35 @@ class AddListing extends Component {
                 "lastModified": null,
                 "ebayAccount": this.state.ebayAccount,
                 "status": "offline",
+                "authorId": "0",
           }
-          this.props.listingDraftUpdated(fields);
+          //this.props.listingDraftUpdated(fields);
+
+          //encodeURIComponent(JSON.stringify(fields))
+
+          this.props.listingAddDatabase(this.props.urlBase + '/createlisting/' + fields.sku + '/' + encodeURIComponent(JSON.stringify(fields)), fields);
+
+          this.setState({
+            title: "",
+            location: "",
+            brand: "",
+            brandId: "",
+            quantity: "1",
+            partNumber: "",
+            partNumberList: [],
+            upc: "",
+            //brandList: [{id:"1",value:"FORD"},{id:"2",value:"FORD MOTORS"},{id:"3", value: "MOTORCRAFT"},{id:4, value: "GM"}],
+            //brandList: this.props.brands,
+            brandListFiltered: [],
+            brandSelected: {},
+            condition: "0",
+            conditionDescriptionSelected: [],
+            conditionDescription: [],
+            sellInLots: "No",
+            quantityLot: "",
+            ebayAccount: "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",                    
+        })
+
       }
 
       onPressResetForm = () => {
@@ -178,11 +237,12 @@ class AddListing extends Component {
             "title": "",
             "brand": "",
             "partNumbers": [],
+            "upc": "",
             "bestOffer": true,
             "description": "",
             "condition": "0",
             "conditionDescription": [],
-            "location": "",
+            "location": [],
             "freeShipping": true,
             "domestic": "0",
             "international": "0",
@@ -195,8 +255,10 @@ class AddListing extends Component {
             "lastModified": null,
             "ebayAccount": "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",
             "status": "offline",
+            "authorId": "0",
       }
       this.props.listingDraftUpdated(fields);
+      this.props.addNewLocation({"id":"", "value":""});
         
         
         this.setState({
@@ -207,6 +269,7 @@ class AddListing extends Component {
                 quantity: "1",
                 partNumber: "",
                 partNumberList: [],
+                upc: "",
                 //brandList: [{id:"1",value:"FORD"},{id:"2",value:"FORD MOTORS"},{id:"3", value: "MOTORCRAFT"},{id:4, value: "GM"}],
                 //brandList: this.props.brands,
                 brandListFiltered: [],
@@ -259,6 +322,9 @@ class AddListing extends Component {
     
     render() {
         //const testing1 = this.props.brands;
+
+     if (this.props.listingDraftIsLoading === false){
+
       return (
         <ScrollView>
         
@@ -287,6 +353,7 @@ class AddListing extends Component {
           autoCapitalize = "characters"
           maxLength={30}
           autoCorrect={false}
+          value={this.state.location}
         />
         
 
@@ -328,6 +395,23 @@ class AddListing extends Component {
         />
         
         <PartNumberList deleteItem = {this.deleteItem} partNumbers = {this.state.partNumberList} />
+
+        {this.state.title.length > 0 ? <Text style={styles.text} >UPC</Text> : <Text></Text>}
+
+        <TextInput
+          ref={ input => {
+            this.inputs['upc'] = input;
+          }}
+          value={this.state.upc}
+          onSubmitEditing={() => {
+            this.focusNextField('title');
+          }}
+          style={styles.titleInput}
+          placeholder="Enter UPC"
+          onChangeText={(upc) => this.setState({upc})}
+          maxLength={50}
+          autoCorrect={false}
+        />
         
         {this.state.title.length > 0 ? <Text style={styles.text} >Title</Text> : <Text></Text>}
 
@@ -448,7 +532,17 @@ class AddListing extends Component {
         
         </ScrollView>
       
-      )
+      ) } else {
+          return (
+            <View style={styles.container}>
+            <Spinner
+              visible={this.state.spinner}
+              textContent={'Creating New Listing...'}
+              textStyle={styles.spinnerTextStyle}
+            />            
+          </View>
+          )
+      }
     }
   }
 
@@ -489,6 +583,15 @@ class AddListing extends Component {
         height: 280,
         marginTop:50,
       },
+      spinnerTextStyle: {
+        color: '#FFF'
+      },
+      container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F5FCFF'
+      },
   
   });
 
@@ -498,9 +601,13 @@ class AddListing extends Component {
     return {
         users: state.users,
         brands: state.brands,
+        locations: state.locations,
         listingDraft: state.listingDraft,
         ebayMarketplaces: state.ebayMarketplaces,
         urlBase: state.urlBase,
+        newLocation: state.newLocation,
+        listingDraftHasErrored: state.listingDraftHasErrored,
+        listingDraftIsLoading: state.listingDraftIsLoading,
     };
   };
   
@@ -510,7 +617,12 @@ class AddListing extends Component {
         fetchListings: (url) => dispatch(listingsFetchData(url)),
         fetchBrands: (url) => dispatch(brandsFetchData(url)),
         listingDraftUpdated: (listingDraft) => dispatch(listingDraftUpdated(listingDraft)),
+        listingAddDatabase: (url, listingDraft) => dispatch(listingAddDatabase(url, listingDraft)),
         brandAddDatabase: (url, id, value) => dispatch(brandAddDatabase(url, id, value)),
+        locationAddDatabase: (url, id, value) => dispatch(locationAddDatabase(url, id, value)),
+        addNewLocation: (newLocation) => dispatch(addNewLocation(newLocation)),
+
+        
     };
   };
 

@@ -12,8 +12,9 @@ import { filterByCondition, filterByStatus, filterByUser, filterByMarketplace, s
 import { productsSelected } from './reducers/productsSelected';
 import { productsInPage } from './reducers/productsInPage';
 import { picturesHasErrored, picturesIsLoading } from './reducers/pictures';
-import { listingDraft } from './reducers/listingDraft';
+import { listingDraft, listingDraftHasErrored, listingDraftIsLoading } from './reducers/listingDraft';
 import { newBrand } from './reducers/newBrand';
+import { newLocation } from './reducers/newLocation';
 import { urlBase } from './reducers/urlBase';
 
 
@@ -49,7 +50,10 @@ export default combineReducers({
     productsInPage,
     picturesHasErrored,
     picturesIsLoading,
-    listingDraft,    
+    listingDraft,
+    listingDraftHasErrored,    
+    listingDraftIsLoading,    
     newBrand,
+    newLocation,
     urlBase,
 });
