@@ -12,6 +12,7 @@ const uuidv4 = require('uuid/v4');
   import BrandList from './BrandList';
   import ConditionDescription from './ConditionDescription';
   import Spinner from 'react-native-loading-spinner-overlay';
+  import ImagePicker from 'react-native-image-picker';
   //import { newBrand } from '../modules/reducers/newBrand';
 
 
@@ -289,7 +290,7 @@ class AddListing extends Component {
           this.inputs[key].focus();
       }
 
-      /*pickImageHandler = () => {
+      pickImageHandler = () => {
 
         const options = {
             storageOptions: {
@@ -315,10 +316,31 @@ class AddListing extends Component {
                 this.setState({
                   avatarSource: source,
                 });
-            }
+
+                const photo = {
+                    uri: response.uri,
+                    name: 'image.jpg',
+                    type: 'image/jpeg',
+                  };
+                  const data = new FormData();
+                  data.append('file', photo);
+                  const config = {
+                    method: 'POST',
+                    body: data,
+                    headers: {
+                      'Content-Type': 'multipart/form-data',
+                    },
+                  };
+                  return fetch(this.props.urlBase + '/upload', config);
+                
+            }                       
 
         });
-      }*/
+
+        
+        
+          
+      }
     
     render() {
         //const testing1 = this.props.brands;
@@ -336,6 +358,40 @@ class AddListing extends Component {
         onActionSelected={this.onActionSelected} />
         
         
+        { this.state.avatarSource !== null ? <View style={styles.placeholder}><Image source={this.state.avatarSource} style={styles.previewImage} />
+        </View> : <Text></Text>}
+        
+        <Button
+            onPress={this.pickImageHandler}
+            title="Add Picture"
+            color="#0099cc"
+            accessibilityLabel="Add Picture"
+        />
+        
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         {this.state.location.length > 0 ? <Text style={styles.text} >Location</Text> : <Text></Text>}
@@ -579,7 +635,7 @@ class AddListing extends Component {
         borderWidth: 1,
         borderColor: "black",
         backgroundColor: "#eee",
-        width: "70%",
+        width: "100%",
         height: 280,
         marginTop:50,
       },
