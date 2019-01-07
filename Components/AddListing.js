@@ -9,6 +9,7 @@ const uuidv4 = require('uuid/v4');
   import { Actions } from 'react-native-router-flux';
   
   import PartNumberList from './PartNumberList';
+  import PicturesList from './PicturesList';
   import BrandList from './BrandList';
   import ConditionDescription from './ConditionDescription';
   import Spinner from 'react-native-loading-spinner-overlay';
@@ -31,6 +32,8 @@ class AddListing extends Component {
         quantity: "1",
         partNumber: "",
         partNumberList: [],
+        pictures: [],
+        picturesListTemp: [],
         upc: "",
         //brandList: [{id:"1",value:"FORD"},{id:"2",value:"FORD MOTORS"},{id:"3", value: "MOTORCRAFT"},{id:4, value: "GM"}],
         //brandList: this.props.brands.map(item => item),
@@ -84,6 +87,14 @@ class AddListing extends Component {
         const list = this.state.partNumberList.filter(item => item.id !== id);
         this.setState({
             partNumberList: list,
+        })
+
+    }
+
+    deletePicture = (id) => {
+        const list = this.state.picturesListTemp.filter(item => item.id !== id);
+        this.setState({
+            picturesListTemp: list,
         })
 
     }
@@ -167,12 +178,12 @@ class AddListing extends Component {
             }
 
             
-
+            
 
             const fields = {
                 "sku": uuid,
                 "uuid": uuid,
-                "pictures": [],
+                "pictures": this.state.picturesListTemp.map(item => item.uri), 
                 "quantity": this.state.quantity,
                 "price": "",
                 "title":  this.state.brand + this.checkLot(this.state.sellInLots) + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
@@ -222,7 +233,9 @@ class AddListing extends Component {
             conditionDescription: [],
             sellInLots: "No",
             quantityLot: "",
-            ebayAccount: "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",                    
+            ebayAccount: "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",
+            picturesListTemp: [],
+            //avatarSource: null,                    
         })
 
       }
@@ -280,7 +293,9 @@ class AddListing extends Component {
                 conditionDescription: [],
                 sellInLots: "No",
                 quantityLot: "",
-                ebayAccount: "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352"        
+                ebayAccount: "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",
+                //avatarSource: null,
+                picturesListTemp: [],        
           })
     }
 
@@ -313,17 +328,20 @@ class AddListing extends Component {
                 // You can also display the image using data:
                 // const source = { uri: 'data:image/jpeg;base64,' + response.data };
             
-                this.setState({
+                /*this.setState({
                   avatarSource: source,
-                });
+                });*/
 
                 const photo = {
                     uri: response.uri,
+                    //filename: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1],
+                    //name: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1],
                     name: 'image.jpg',
                     type: 'image/jpeg',
                   };
                   const data = new FormData();
                   data.append('file', photo);
+                  data.append('name', response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]);
                   const config = {
                     method: 'POST',
                     body: data,
@@ -331,7 +349,12 @@ class AddListing extends Component {
                       'Content-Type': 'multipart/form-data',
                     },
                   };
-                  return fetch(this.props.urlBase + '/upload', config);
+                  let idPic = uuidv4();
+                  this.setState({ picturesListTemp: this.state.picturesListTemp.concat({id: idPic, source: {uri: response.uri}, uri: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]} )});
+                  return fetch(this.props.urlBase + '/upload', config).catch((error) => {
+                    console.error(error);
+                  });
+                  
                 
             }                       
 
@@ -358,7 +381,7 @@ class AddListing extends Component {
         onActionSelected={this.onActionSelected} />
         
         
-        { this.state.avatarSource !== null ? <View style={styles.placeholder}><Image source={this.state.avatarSource} style={styles.previewImage} />
+        { this.state.picturesListTemp.length > 0 ? <View style={styles.placeholder}><PicturesList deletePicture = {this.deletePicture} pictures={this.state.picturesListTemp} />
         </View> : <Text></Text>}
         
         <Button
@@ -636,8 +659,8 @@ class AddListing extends Component {
         borderColor: "black",
         backgroundColor: "#eee",
         width: "100%",
-        height: 280,
-        marginTop:50,
+        //height: 280,
+        //marginTop:50,
       },
       spinnerTextStyle: {
         color: '#FFF'
