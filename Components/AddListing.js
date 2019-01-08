@@ -24,6 +24,7 @@ const uuidv4 = require('uuid/v4');
 class AddListing extends Component {
 
     state = {
+        uploadingPicture: false,
         title: "",
         location: "",
         brand: "",
@@ -155,13 +156,24 @@ class AddListing extends Component {
       onPressCreateListing = () => {
             const uuid = uuidv4();
             let tempBrand = '';
+            let brandSearch = this.props.brands.filter(item => item.value.toUpperCase() === this.state.brand.toUpperCase());
 
-            if (this.props.brands.filter(item => item.value.toUpperCase() === this.state.brand.toUpperCase()).length === 0){
+            if (brandSearch.length === 0){
+                tempBrand = uuidv4();
+                this.props.brandAddDatabase(this.props.urlBase + '/addbrand/' + tempBrand + '/' + this.state.brand.toUpperCase(), tempBrand, this.state.brand);
+            } else if (brandSearch.length > 0 && this.state.brandId === "") {
+                tempBrand = brandSearch[0].id;
+            } else {
+                tempBrand = this.state.brandId;
+            }
+            
+
+            /*if (this.props.brands.filter(item => item.value.toUpperCase() === this.state.brand.toUpperCase()).length === 0){
                 tempBrand = uuidv4();
                 this.props.brandAddDatabase(this.props.urlBase + '/addbrand/' + tempBrand + '/' + this.state.brand.toUpperCase(), tempBrand, this.state.brand);
             } else {
                 tempBrand = this.state.brandId;
-            }
+            }*/
 
             
             let tempLocation = '';
@@ -352,8 +364,17 @@ class AddListing extends Component {
                     },
                   };
                   let idPic = uuidv4();
-                  this.setState({ picturesListTemp: this.state.picturesListTemp.concat({id: idPic, source: {uri: response.uri}, uri: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]} )});
-                  fetch(this.props.urlBase + '/upload', config).catch((error) => {
+                  this.setState({ uploadingPicture: true, picturesListTemp: this.state.picturesListTemp.concat({id: idPic, source: {uri: response.uri}, uri: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]} )});
+                  fetch(this.props.urlBase + '/upload', config)
+                  .then((response) => {
+            
+                    this.setState({uploadingPicture: false});
+                    
+                    return response
+                
+                   })  
+                  .catch((error) => {
+                    this.setState({uploadingPicture: false});
                     console.error(error);
                   });
                   
@@ -386,13 +407,14 @@ class AddListing extends Component {
         { this.state.picturesListTemp.length > 0 ? <View style={styles.placeholder}><PicturesList deletePicture = {this.deletePicture} pictures={this.state.picturesListTemp} />
         </View> : <Text></Text>}
         
+        { this.state.uploadingPicture === false ?
         <Button
             onPress={this.pickImageHandler}
             title="Add Picture"
             color="#0099cc"
             accessibilityLabel="Add Picture"
-        />
-        
+        /> : <Text></Text>
+        }
         
 
 
@@ -426,7 +448,7 @@ class AddListing extends Component {
             this.inputs['location'] = input;
           }}
           onSubmitEditing={() => {
-            this.focusNextField('brand');
+            this.focusNextField('partnumbers');
           }}
           style={styles.titleInput}
           placeholder="Enter Location"
@@ -438,26 +460,7 @@ class AddListing extends Component {
         />
         
 
-        {this.state.brand.length > 0 ? <Text style={styles.text} >Brand</Text> : <Text></Text>}
-
-        <TextInput
-          ref={ input => {
-            this.inputs['brand'] = input;
-          }}
-          style={styles.titleInput}
-          placeholder="Enter Brand"
-          onChangeText={this.changeBrand}         
-          autoCapitalize = "characters"
-          maxLength={30}
-          autoCorrect={false}
-          value={this.showBrand()}
-          onSubmitEditing={() => {
-            this.focusNextField('partnumbers');
-          }}
-          //onEndEditing = {this.finishEditingBrand}
-        />
-
-        <BrandList brandListFiltered = {this.state.brandListFiltered} selectBrand = {this.selectBrand} />
+        
 
         <Text style={styles.text}>Part Numbers</Text>
         
@@ -473,9 +476,38 @@ class AddListing extends Component {
           onEndEditing = {this.finishEditing}
           maxLength={30}
           autoCorrect={false}
+          onSubmitEditing={() => {
+            this.focusNextField('brand');
+          }}
         />
         
         <PartNumberList deleteItem = {this.deleteItem} partNumbers = {this.state.partNumberList} />
+
+        {/*this.state.brand.length > 0 ? <Text style={styles.text} >Brand</Text> : <Text></Text>*/}
+
+        <Text style={styles.text} >Brand</Text>
+
+        <TextInput
+          ref={ input => {
+            this.inputs['brand'] = input;
+          }}
+          style={styles.titleInput}
+          placeholder="Enter Brand"
+          onChangeText={this.changeBrand}         
+          autoCapitalize = "characters"
+          maxLength={30}
+          autoCorrect={false}
+          value={this.showBrand()}
+          onSubmitEditing={() => {
+            this.focusNextField('title');
+          }}
+          
+          //onEndEditing = {this.finishEditingBrand}
+        />
+
+        <BrandList brandListFiltered = {this.state.brandListFiltered} selectBrand = {this.selectBrand} />
+
+        
 
        <Text style={styles.text}>Sell in Lots?</Text>
         <Picker
