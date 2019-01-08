@@ -141,14 +141,16 @@ class AddListing extends Component {
       };
 
       checkLot = (lotOption) => {
-          if (lotOption === "Pair"){
-              return " ** Pair ** ";
-          } else if (lotOption !== "Pair" && lotOption !== "No"){
-              return " ** " + lotOption + " " + this.state.quantityLot + " ** ";  
-          }
+        if (lotOption === "Pair"){
+            return " * Pair * ";
+        } else if (lotOption !== "Pair" && lotOption !== "No"){
+            //return " *" + lotOption + " " + this.state.quantityLot + "* ";  
+            return " *" + this.state.quantityLot + " PCS* ";  
+        }
 
-          return " ";
-      }
+        return " ";
+    }
+
 
       onPressCreateListing = () => {
             const uuid = uuidv4();
@@ -186,7 +188,7 @@ class AddListing extends Component {
                 "pictures": this.state.picturesListTemp.map(item => item.uri), 
                 "quantity": this.state.quantity,
                 "price": "",
-                "title":  this.state.brand + this.checkLot(this.state.sellInLots) + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
+                "title":  this.checkLot(this.state.sellInLots) + this.state.brand + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
                 "brand": tempBrand,
                 "partNumbers": this.state.partNumberList.map(item => item.partNumber),
                 "upc": this.state.upc,
@@ -351,7 +353,7 @@ class AddListing extends Component {
                   };
                   let idPic = uuidv4();
                   this.setState({ picturesListTemp: this.state.picturesListTemp.concat({id: idPic, source: {uri: response.uri}, uri: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]} )});
-                  return fetch(this.props.urlBase + '/upload', config).catch((error) => {
+                  fetch(this.props.urlBase + '/upload', config).catch((error) => {
                     console.error(error);
                   });
                   
@@ -475,22 +477,33 @@ class AddListing extends Component {
         
         <PartNumberList deleteItem = {this.deleteItem} partNumbers = {this.state.partNumberList} />
 
-        {this.state.title.length > 0 ? <Text style={styles.text} >UPC</Text> : <Text></Text>}
+       <Text style={styles.text}>Sell in Lots?</Text>
+        <Picker
+            style={styles.text}
+            prompt="Sell in lots"
+            //mode="dropdown"
+            selectedValue={this.state.sellInLots}
+            //style={{ height: 50, width: 100 }}
+            onValueChange={(itemValue, itemIndex) => this.setState({sellInLots: itemValue})}>
+            <Picker.Item label="No" value= "No" />
+            <Picker.Item label="Lot of" value= "PCS" />                        
+        </Picker>
+        {this.state.sellInLots !== 'No' ? 
+            <TextInput
+            style={styles.titleInput}
+            placeholder="Enter Quantity Lot"
+            onChangeText={(quantityLot) => this.setState({quantityLot})}
+            maxLength={10}
+            autoCorrect={false}
+            keyboardType="numeric"
+          /> :
+            <Text></Text>
+        }
 
-        <TextInput
-          ref={ input => {
-            this.inputs['upc'] = input;
-          }}
-          value={this.state.upc}
-          onSubmitEditing={() => {
-            this.focusNextField('title');
-          }}
-          style={styles.titleInput}
-          placeholder="Enter UPC"
-          onChangeText={(upc) => this.setState({upc})}
-          maxLength={50}
-          autoCorrect={false}
-        />
+
+        
+
+        
         
         {this.state.title.length > 0 ? <Text style={styles.text} >Title</Text> : <Text></Text>}
 
@@ -523,31 +536,7 @@ class AddListing extends Component {
           keyboardType="numeric"
           value={this.state.quantity}
         />
-        <Text style={styles.text}>Sell in Lots?</Text>
-        <Picker
-            style={styles.text}
-            prompt="Sell in lots"
-            //mode="dropdown"
-            selectedValue={this.state.sellInLots}
-            //style={{ height: 50, width: 100 }}
-            onValueChange={(itemValue, itemIndex) => this.setState({sellInLots: itemValue})}>
-            <Picker.Item label="No" value= "No" />
-            <Picker.Item label="Pair" value= "Pair" />
-            <Picker.Item label="Lot of" value="Lot of" />
-            <Picker.Item label="Set of" value="Set of" />
-            <Picker.Item label="Package of" value="Package of" />            
-        </Picker>
-        {this.state.sellInLots !== 'No' && this.state.sellInLots !== 'Pair' ? 
-            <TextInput
-            style={styles.titleInput}
-            placeholder="Enter Quantity Lot"
-            onChangeText={(quantityLot) => this.setState({quantityLot})}
-            maxLength={10}
-            autoCorrect={false}
-            keyboardType="numeric"
-          /> :
-            <Text></Text>
-        }
+        
 
         
         <Text style={styles.text}>Condition</Text>
@@ -565,12 +554,46 @@ class AddListing extends Component {
             <Picker.Item label="For parts or not working" value="4" />
             
         </Picker>
-        {this.state.condition !== '0' ? 
+
+
+        {this.state.condition === '1' ? 
             <ConditionDescription 
                 conditionDescription={this.state.conditionDescriptionSelected} 
                 onSelectConditionDescription = {this.onSelectConditionDescription}/> :
-            <Text></Text>
+            Number(this.state.condition) > 1 ?
+                <TextInput
+                    style={styles.titleInput}
+                    /*ref={ input => {
+                        this.inputs['quantity'] = input;
+                    }}*/
+                    placeholder="Write Condition description"
+                    onChangeText={(conditionDescription) => this.setState({conditionDescription: [conditionDescription]})}
+                    maxLength={60}
+                    autoCorrect={false}
+                    //keyboardType="numeric"
+                    //value={this.state.conditionDescription}
+                    />   :
+                    null
         }
+
+        {this.state.title.length > 0 ? <Text style={styles.text} >UPC</Text> : <Text></Text>}
+
+        <TextInput
+            ref={ input => {
+            this.inputs['upc'] = input;
+            }}
+            value={this.state.upc}
+            onSubmitEditing={() => {
+                this.focusNextField('title');
+            }}
+            style={styles.titleInput}
+            placeholder="Enter UPC"
+            onChangeText={(upc) => this.setState({upc})}
+            maxLength={50}
+            autoCorrect={false}
+        />
+
+
         <Text style={styles.text}>Ebay Account</Text>
         <Picker
             style={styles.text}
@@ -597,12 +620,12 @@ class AddListing extends Component {
             accessibilityLabel="Create a new Listing"
         />
 
-        <Button
+        {/*<Button
             onPress={this.onPressResetForm}
             title="Reset"
             color="#0099cc"
             accessibilityLabel="Reset Form"
-        />
+        />*/}
         
 
         

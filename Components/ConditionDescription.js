@@ -5,6 +5,14 @@ import { View, Text } from 'react-native';
 
 const mockData = [
     {
+        label: 'As Pictured',
+        value: 'As Pictured'
+    },
+    {
+        label: 'New, Open Bag/Box for Taking Pictures',
+        value: 'New, Open Bag/Box for Taking Pictures'
+    },
+    {
         label: 'Box Damage',
         value: 'Box Damage'
     },
@@ -24,15 +32,15 @@ const mockData = [
         label: 'Out of Bag',
         value: 'Out of Bag'
     },
-    {
+    /*{
         label: 'NOS',
         value: 'NOS',
         RNchecked: false,
-    },
-    {
+    },*/
+    /*{
         label: 'Rebuilt / Remanufactured',
         value: 'Rebuilt / Remanufactured'
-    },
+    },*/
     {
         label: 'Missing Parts',
         value: 'Missing Parts'
@@ -44,16 +52,12 @@ const mockData = [
     {
         label: 'Some Scratches',
         value: 'Some Scratches'
-    },
-    {
-        label: 'As Pictured',
-        value: 'As Pictured'
-    },
+    },    
     {
         label: 'Dirty',
         value: 'Dirty'
     },
-    {
+    /*{
         label: 'Small Cracks',
         value: 'Small Cracks'
     },
@@ -64,15 +68,12 @@ const mockData = [
     {
         label: 'Unknown Condition',
         value: 'Unknown Condition'
-    },
+    },*/
     {
         label: 'New Take off',
         value: 'New Take off'
     },
-    {
-        label: 'New, Open Bag/Box for Taking Pictures',
-        value: 'New, Open Bag/Box for Taking Pictures'
-    },
+    
 ];
 
 class ConditionDescription extends Component {
