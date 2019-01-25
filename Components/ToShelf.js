@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import {Platform, StyleSheet, Text, View, ToolbarAndroid} from 'react-native';
+import { userActiveLogout } from '../modules/actions';
 //import '../App.css';
 //import logo from '../logo.svg';
 /*import { 
@@ -21,6 +22,12 @@ class ToShelf extends Component {
             Actions.toShelf()           
 
         }
+
+        if (position === 2) {
+          Actions.home();
+          this.props.userActiveLogout();
+          
+      }
     }
     
     render() {
@@ -30,7 +37,7 @@ class ToShelf extends Component {
         style={styles.toolbar}
         //logo={require('./app_logo.png')}
         title="AdvertisingApp"
-        actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}]}
+        actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}, {title: 'Logout', show: 'never'}]}
         onActionSelected={this.onActionSelected} />
         <Text>TO SHELF</Text>
         </View>
@@ -62,12 +69,10 @@ class ToShelf extends Component {
     };
   };
   
-  /*const mapDispatchToProps = (dispatch) => {
+  const mapDispatchToProps = (dispatch) => {
     return {
-        fetchLocations: (url) => dispatch(locationsFetchData(url)),
-        fetchListings: (url) => dispatch(listingsFetchData(url)),
-        fetchBrands: (url) => dispatch(brandsFetchData(url))
+      userActiveLogout: () => dispatch(userActiveLogout()),
     };
-  };*/
+  };
 
-export default connect(mapStateToProps)(ToShelf);
+export default connect(mapStateToProps, mapDispatchToProps)(ToShelf);

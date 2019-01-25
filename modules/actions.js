@@ -31,6 +31,57 @@ export function listingDraftUpdated(listingDraft) {
     };
 }
 
+export function userActiveLogout() {
+    return (dispatch) => {
+        dispatch({type: 'RESET'})
+    }
+}
+
+export function userActiveHasErrored(bool){
+    return {
+        type: 'USER_ACTIVE_HAS_ERRORED',
+        hasErrored: bool
+    };
+}
+
+export function userActiveIsLoading(bool){
+    return {
+        type: 'USER_ACTIVE_IS_LOADING',
+        isLoading: bool
+    };
+}
+
+export function userActiveFetchDataSuccess(userActive) {
+    return {
+        type: 'USER_ACTIVE_FETCH_DATA_SUCCESS',
+        userActive
+    };
+}
+
+export function userActiveFetchData(url) {
+    return (dispatch) => {
+        dispatch(userActiveIsLoading(true));
+
+        fetch(url,{
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                //'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => {
+            
+            
+            dispatch(userActiveIsLoading(false));
+            
+            return response.json()
+
+        })
+        .then((userActive) => dispatch(userActiveFetchDataSuccess(userActive)))
+        .catch(() => dispatch(userActiveHasErrored(true)));
+    }
+}
+
 //************************************** 
 
 /*return (dispatch) => {
@@ -185,6 +236,57 @@ export function addNewLocation(newLocation) {
         .catch(() => dispatch(locationsHasErrored(true)));
     }
 }*/
+
+export function compatibilityManualHasErrored(bool){
+    return {
+        type: 'COMPATIBILITY_MANUAL_HAS_ERRORED',
+        hasErrored: bool
+    };
+}
+
+export function compatibilityManualIsLoading(bool){
+    return {
+        type: 'COMPATIBILITY_MANUAL_IS_LOADING',
+        isLoading: bool
+    };
+}
+
+export function compatibilityManualFetchDataSuccess(locations) {
+    return {
+        type: 'COMPATIBILITY_MANUAL_FETCH_DATA_SUCCESS',
+        locations
+    };
+}
+
+
+
+export function compatibilityManualFetchData(url) {
+
+    return (dispatch) => {
+        dispatch(compatibilityManualIsLoading(true))
+        fetch(url,{
+            headers: {
+                'Access-Control-Allow-Origin': '*',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+            }
+        })
+        .then((response) => {
+            
+            dispatch(compatibilityManualIsLoading(false));
+            
+            return response.json()
+        
+        })    
+        .then((compatibilityManual) => dispatch(compatibilityManualFetchDataSuccess(compatibilityManual)))
+        .catch((error) => {
+          console.error(error);
+        });
+      }
+    
+}
+
+
 
 export function locationsFetchData(url) {
 

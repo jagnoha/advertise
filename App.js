@@ -29,7 +29,9 @@ export default class App extends Component {
       <Router>          
               <Stack key="root">
                 <Scene key="home" component={MainApp} hideNavBar={true} />
-                <Scene key="toShelf" component={ToShelf} hideNavBar={true} />                
+                <Scene key="toShelf" component={ToShelf} hideNavBar={true} />               
+                         
+              
               </Stack>
       </Router>
       </Provider>

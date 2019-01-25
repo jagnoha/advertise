@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import {Button, Image, StyleSheet, Text, TextInput, View, ToolbarAndroid, ScrollView, Picker} from 'react-native';
 import { locationsFetchData, listingsFetchData, brandsFetchData, 
-       listingDraftUpdated, brandAddDatabase, locationAddDatabase, addNewLocation, listingAddDatabase } from '../modules/actions';
+       listingDraftUpdated, brandAddDatabase, locationAddDatabase, addNewLocation, 
+       listingAddDatabase,userActiveLogout } from '../modules/actions';
 const uuidv4 = require('uuid/v4');
 
 
@@ -43,6 +44,7 @@ class AddListing extends Component {
         condition: "0",
         conditionDescriptionSelected: [],
         conditionDescription: [],
+        customConditionDescription: "",
         sellInLots: "No",
         quantityLot: "",
         avatarSource : null,
@@ -63,6 +65,13 @@ class AddListing extends Component {
             Actions.toShelf()           
 
         }
+
+        if (position === 2) {
+            Actions.home();
+            this.props.userActiveLogout();
+            
+        }
+
     }
 
     finishEditing = () => {
@@ -78,6 +87,8 @@ class AddListing extends Component {
     changeBrand = (brand) => {
 
         //const brandListFiltered = this.props.brands.filter(item => item.value.includes(brand)).slice(0,5);
+        //this.props.fetchCompatibilityManual(this.props.urlBase + 'websitefinder'+ this.state.brand.toUpperCase() + '/' + this.state.partNumberList[0]);
+
         
         const brandListFiltered = this.props.brands.filter(item => item.value.includes(brand)).slice(0,5);
 
@@ -105,7 +116,8 @@ class AddListing extends Component {
     }
 
     selectBrand = (value, id) => {
-        
+        //this.props.fetchCompatibilityManual(this.props.urlBase + '/websitefinder'+ this.state.brand.toUpperCase() + '/' + this.state.partNumberList[0]);
+
         //const brandListFiltered = this.props.brands.filter(item => item.value.includes(value)).slice(0,5);
         this.setState({
             brand: value,
@@ -154,9 +166,19 @@ class AddListing extends Component {
 
 
       onPressCreateListing = () => {
+
+
+            //this.props.fetchCompatibilityManual(this.props.urlBase + 'websitefinder'+ this.state.brand.toUpperCase() + '/' + this.state.partNumberList[0]);
+
+            
             const uuid = uuidv4();
             let tempBrand = '';
+            
+            //let brandSearch = this.props.brands.filter(item => item.value.toUpperCase() === this.state.brand.toUpperCase());
+
             let brandSearch = this.props.brands.filter(item => item.value.toUpperCase() === this.state.brand.toUpperCase());
+            
+            //let brandSearch = this.props.brands.filter(item => item.value.includes(brand));
 
             if (brandSearch.length === 0){
                 tempBrand = uuidv4();
@@ -192,22 +214,21 @@ class AddListing extends Component {
             }
 
             
-            
-
+          
             const fields = {
                 "sku": uuid,
                 "uuid": uuid,
                 "pictures": this.state.picturesListTemp.map(item => item.uri), 
                 "quantity": this.state.quantity,
                 "price": "",
-                "title":  this.checkLot(this.state.sellInLots) + this.state.brand + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
+                "title":  (this.checkLot(this.state.sellInLots) + this.state.brand + " " + this.state.title + " " + this.state.partNumberList[0].partNumber).trim(),
                 "brand": tempBrand,
                 "partNumbers": this.state.partNumberList.map(item => item.partNumber),
                 "upc": this.state.upc,
-                "bestOffer": true,
+                "bestOffer": false,
                 "description": this.state.brand + this.checkLot(this.state.sellInLots) + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
                 "condition": this.state.condition,
-                "conditionDescription": this.state.conditionDescription.map(item => item),
+                "conditionDescription": this.state.condition !== '0' ? this.state.conditionDescription.map(item => item).concat(this.state.customConditionDescription) : [],
                 "location": tempLocation === '' ? [] : [tempLocation],
                 "freeShipping": true,
                 "domestic": "0",
@@ -217,11 +238,18 @@ class AddListing extends Component {
                 "depth": "8",
                 "weight": "8",
                 "weightUnit": "oz",
-                "category": null,
+                "category": {
+                    "CategoryID": "33615",
+                    "CategoryName": "eBay Motors:Parts & Accessories:Car & Truck Parts:Other Parts"
+                },
                 "lastModified": null,
                 "ebayAccount": this.state.ebayAccount,
                 "status": "offline",
-                "authorId": "0",
+                "authorId": this.props.userActive.id,
+                "compatibilityUrl": "", //this.props.compatibilityManual[0] === undefined ? "" : this.props.compatibilityManual[0].Url,
+                "compatibilityManual": [], //this.props.compatibilityManual.slice(1).map(item => item),
+                "compatibilityEbayId": "",
+                "hasCompatibility": false,
           }
           //this.props.listingDraftUpdated(fields);
 
@@ -249,6 +277,7 @@ class AddListing extends Component {
             quantityLot: "",
             ebayAccount: "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",
             picturesListTemp: [],
+            customConditionDescription: "",
             //avatarSource: null,                    
         })
 
@@ -266,7 +295,7 @@ class AddListing extends Component {
             "brand": "",
             "partNumbers": [],
             "upc": "",
-            "bestOffer": true,
+            "bestOffer": false,
             "description": "",
             "condition": "0",
             "conditionDescription": [],
@@ -279,11 +308,18 @@ class AddListing extends Component {
             "depth": "8",
             "weight": "8",
             "weightUnit": "oz",
-            "category": null,
+            "category": {
+                "CategoryID": "33615",
+                "CategoryName": "eBay Motors:Parts & Accessories:Car & Truck Parts:Other Parts"
+            },
             "lastModified": null,
             "ebayAccount": "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",
             "status": "offline",
-            "authorId": "0",
+            "authorId": this.props.userActive.id,
+            "compatibilityUrl": "",
+            "compatibilityManual": [],
+            "compatibilityEbayId": "",
+            "hasCompatibility": false,
       }
       this.props.listingDraftUpdated(fields);
       this.props.addNewLocation({"id":"", "value":""});
@@ -309,7 +345,8 @@ class AddListing extends Component {
                 quantityLot: "",
                 ebayAccount: "39d9cfd4-adb6-4a47-abf5-b8d2a18e1352",
                 //avatarSource: null,
-                picturesListTemp: [],        
+                picturesListTemp: [],
+                customConditionDescription: "",        
           })
     }
 
@@ -400,8 +437,9 @@ class AddListing extends Component {
         style={styles.toolbar}
         //logo={require('./app_logo.png')}
         title="AdvertisingApp"
-        actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}]}
+        actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}, {title: 'Logout', show: 'never'}]}
         onActionSelected={this.onActionSelected} />
+        
         
         
         { this.state.picturesListTemp.length > 0 ? <View style={styles.placeholder}><PicturesList deletePicture = {this.deletePicture} pictures={this.state.picturesListTemp} />
@@ -544,9 +582,9 @@ class AddListing extends Component {
             this.inputs['title'] = input;
           }}
           value={this.state.title}
-          onSubmitEditing={() => {
+          /*onSubmitEditing={() => {
             this.focusNextField('quantity');
-          }}
+          }}*/
           style={styles.titleInput}
           placeholder="Enter Title"
           onChangeText={(title) => this.setState({title})}
@@ -589,9 +627,29 @@ class AddListing extends Component {
 
 
         {this.state.condition === '1' ? 
+            <View>
             <ConditionDescription 
                 conditionDescription={this.state.conditionDescriptionSelected} 
-                onSelectConditionDescription = {this.onSelectConditionDescription}/> :
+                onSelectConditionDescription = {this.onSelectConditionDescription}/> 
+                
+                <TextInput
+                    style={styles.titleInput}
+                    /*ref={ input => {
+                        this.inputs['quantity'] = input;
+                    }}*/
+                    placeholder="Write Condition description"
+                    onChangeText={(customConditionDescription) => this.setState({customConditionDescription})}
+                    maxLength={60}
+                    autoCorrect={false}
+                    //keyboardType="numeric"
+                    //value={this.state.conditionDescription}
+                    />
+                </View>
+                
+                :
+            
+            
+            
             Number(this.state.condition) > 1 ?
                 <TextInput
                     style={styles.titleInput}
@@ -599,7 +657,7 @@ class AddListing extends Component {
                         this.inputs['quantity'] = input;
                     }}*/
                     placeholder="Write Condition description"
-                    onChangeText={(conditionDescription) => this.setState({conditionDescription: [conditionDescription]})}
+                    onChangeText={(customConditionDescription) => this.setState({customConditionDescription})}
                     maxLength={60}
                     autoCorrect={false}
                     //keyboardType="numeric"
@@ -668,13 +726,17 @@ class AddListing extends Component {
       
       ) } else {
           return (
-            <View style={styles.container}>
-            <Spinner
-              visible={this.state.spinner}
-              textContent={'Creating New Listing...'}
-              textStyle={styles.spinnerTextStyle}
-            />            
-          </View>
+            
+                
+                  <View style={styles.container}>
+                       <Text>Saving...</Text>
+                  </View>
+                
+              
+
+
+
+
           )
       }
     }
@@ -742,6 +804,8 @@ class AddListing extends Component {
         newLocation: state.newLocation,
         listingDraftHasErrored: state.listingDraftHasErrored,
         listingDraftIsLoading: state.listingDraftIsLoading,
+        userActive: state.userActive,
+        
     };
   };
   
@@ -755,9 +819,13 @@ class AddListing extends Component {
         brandAddDatabase: (url, id, value) => dispatch(brandAddDatabase(url, id, value)),
         locationAddDatabase: (url, id, value) => dispatch(locationAddDatabase(url, id, value)),
         addNewLocation: (newLocation) => dispatch(addNewLocation(newLocation)),
+        userActiveLogout: () => dispatch(userActiveLogout()),
+        //fetchCompatibilityManual: (url) => dispatch(compatibilityManualFetchData(url)),
 
         
     };
   };
 
 export default connect(mapStateToProps, mapDispatchToProps)(AddListing);
+
+

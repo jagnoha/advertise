@@ -16,7 +16,8 @@ import { listingDraft, listingDraftHasErrored, listingDraftIsLoading } from './r
 import { newBrand } from './reducers/newBrand';
 import { newLocation } from './reducers/newLocation';
 import { urlBase } from './reducers/urlBase';
-
+import { compatibilityManual, compatibilityManualHasErrored, compatibilityManualIsLoading } from './reducers/compatibilityManual';
+import { userActive, userActiveHasErrored, userActiveIsLoading } from './reducers/userActive';
 
 
 
@@ -56,4 +57,10 @@ export default combineReducers({
     newBrand,
     newLocation,
     urlBase,
+    compatibilityManual,
+    compatibilityManualHasErrored,
+    compatibilityManualIsLoading,
+    userActive,
+    userActiveHasErrored,    
+    userActiveIsLoading,
 });

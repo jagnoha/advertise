@@ -1,7 +1,7 @@
 import React, {Component} from 'react';
 import LoginForm from './LoginForm';
 import { connect } from 'react-redux';
-import { locationsFetchData, listingsFetchData, brandsFetchData, ebayMarketplacesFetchData } from '../modules/actions';
+import { locationsFetchData, listingsFetchData, brandsFetchData, ebayMarketplacesFetchData,compatibilityManualFetchData } from '../modules/actions';
 import {Platform, StyleSheet, Text, View} from 'react-native';
 import AddListing from './AddListing';
 import Spinner from 'react-native-loading-spinner-overlay';
@@ -15,10 +15,10 @@ import Spinner from 'react-native-loading-spinner-overlay';
   
   class MainApp extends Component {
 
-    state = {
+    /*state = {
         isLogin: true,
         
-    }
+    }*/
 
     componentDidMount(){
 
@@ -31,6 +31,8 @@ import Spinner from 'react-native-loading-spinner-overlay';
         this.props.fetchLocations(this.props.urlBase + '/getlocations');
         this.props.fetchEbayMarketplaces(this.props.urlBase + '/getebaymarketplaces');
         this.props.fetchListings(this.props.urlBase + '/getlistings');
+        //this.props.fetchCompatibilityManual(this.props.urlBase + '/websitefinder/FORD/7L3Z-14D696-A');
+
         
         //this.props.fetchEbayMarketplaces('http://192.168.1.11:8083/getebaymarketplaces');
         //this.props.fetchListings('http://192.168.1.11:8083/getlistings', this.props.clickedColumn, this.props.direction === 'ascending' ? 'asc' : 'desc' );
@@ -53,19 +55,26 @@ import Spinner from 'react-native-loading-spinner-overlay';
         //this.props.fetchListings('http://192.168.1.11:8083/getlistings', this.props.clickedColumn, this.props.direction === 'ascending' ? 'asc' : 'desc' );
       }
 
-      changeLogin = () => {
+      /*changeLogin = () => {
         this.setState({
           isLogin: this.state.isLogin ? false : true,
         })
-      }
+      }*/
 
       
 
     render() {
 
+      /*if (this.props.listingsIsLoading === true){
+        return (
+          <View style={styles.container}>
+               <Text>Loading...</Text>
+          </View>
+        )
+      }*/ 
         
 
-        if (this.state.isLogin){
+      if (this.props.userActive !== ""){
             return (
               
               
@@ -80,6 +89,17 @@ import Spinner from 'react-native-loading-spinner-overlay';
       
     }
   }
+
+  const styles = StyleSheet.create({
+    
+      container: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#F5FCFF'
+      },
+  
+  });
 
   
 
@@ -104,6 +124,8 @@ import Spinner from 'react-native-loading-spinner-overlay';
         clickedColumn: state.clickedColumn,
         brands: state.brands,
         urlBase: state.urlBase,
+        userActive: state.userActive, 
+        listingsIsLoading: state.listingsIsLoading,
               
     };
   };
@@ -113,7 +135,9 @@ import Spinner from 'react-native-loading-spinner-overlay';
         fetchLocations: (url) => dispatch(locationsFetchData(url)),
         fetchListings: (url, clickedColumn, order) => dispatch(listingsFetchData(url, clickedColumn, order)),
         fetchBrands: (url) => dispatch(brandsFetchData(url)),
-        fetchEbayMarketplaces: (url) => dispatch(ebayMarketplacesFetchData(url))
+        fetchEbayMarketplaces: (url) => dispatch(ebayMarketplacesFetchData(url)),
+        //fetchCompatibilityManual: (url) => dispatch(compatibilityManualFetchData(url)),
+
     };
   };
   

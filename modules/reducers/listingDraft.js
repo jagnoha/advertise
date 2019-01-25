@@ -8,7 +8,7 @@ const fields = {
     "title": "",
     "brand": "",
     "partNumbers": [],
-    "bestOffer": true,
+    "bestOffer": false,
     "description": "",
     "condition": "0",
     "conditionDescription": [],
@@ -27,6 +27,10 @@ const fields = {
     "status": "offline",
     "upc": "",
     "authorId": "0",
+    "compatibilityUrl": "",
+    "compatibilityManual": [],
+    "compatibilityEbayId": "",
+    "hasCompatibility": false,
 }
 
 export function listingDraftHasErrored(state = false, action) {
