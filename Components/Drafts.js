@@ -4,7 +4,7 @@ import { TextInput, Button, RefreshControl, TouchableHighlight, StyleSheet,
 import { Badge } from 'react-native-elements';
 import { listingsFetchData, listingCheckedUpdated, listingsUpdate, locationsFetchData, 
   listingCheckedDeleteDatabase, listingCheckedUpdateDatabase, locationAddDatabase, addNewLocation } from '../modules/actions';
-import '../helpers.js';
+import '../helpers';
 
 const uuidv4 = require('uuid/v4');
 
@@ -29,7 +29,7 @@ const conditionOptions = [
   class MyListItem extends PureComponent {
     
     state = {
-      location: "",
+      location: this.props.location,
       //quantity: this.props.listings.filter(item => item.sku === this.props.id)[0].quantity, //this.props.quantity,
       quantity: this.props.quantity,
       deleteConfirmation: false,
@@ -82,8 +82,10 @@ const conditionOptions = [
                 
                 {
                   (this.props.itemChecked !== this.props.id) &&
+                <View>
                 <Text style={styles.quantity} onPress={() => this.props.onPressItem(this.props.id)} >Quantity: {this.props.quantity} </Text>
-                
+                <Text style={styles.quantity} onPress={() => this.props.onPressItem(this.props.id)} >Location: {this.props.location} </Text>
+                </View>
                 }
                 {
                   (this.props.itemChecked === this.props.id) && (!this.state.deleteConfirmation) &&
@@ -185,7 +187,7 @@ const conditionOptions = [
   }  
 
 
-class ToShelf extends Component {
+class Drafts extends Component {
     
     state = {
       /*toShelfListings: this.props.listings.map(item => { 
@@ -362,6 +364,8 @@ class ToShelf extends Component {
         editLocation={this.editLocation}
         editQuantity={this.editQuantity}
         deleteListing={this.deleteListing}
+        location={this.props.locations.filter(itemLoc => itemLoc.id === item.location[0])[0].value}
+        //location={this.props.locations.filter(itemLocation => itemLocation.id === item.location[0])[0].value}
         //extraData={{itemChecked: this.props.listingChecked}}
         itemChecked={this.props.listingChecked}
         //listings={this.props.listings}
@@ -392,7 +396,7 @@ class ToShelf extends Component {
           )
         
         
-        }).filter(item => item.location.length === 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
+        }).filter(item => item.location.length > 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
         || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase())) 
         )
         })
@@ -461,7 +465,7 @@ class ToShelf extends Component {
                 quantity: item.quantity, pictures: item.pictures, location: item.location,
                 condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value}
             )
-          }).filter(item => item.location.length === 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
+          }).filter(item => item.location.length > 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
           || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase()))              
           )
           })
@@ -582,7 +586,7 @@ class ToShelf extends Component {
         </View>
         */}
 
-        <Text style={styles.text} >Products To Shelf</Text>
+        <Text style={styles.text} >Drafts</Text>
         
         
         <TextInput
@@ -765,6 +769,6 @@ condition: {
     };
   };
 
-export default connect(mapStateToProps, mapDispatchToProps)(ToShelf);
+export default connect(mapStateToProps, mapDispatchToProps)(Drafts);
   
   //, MyListItem);

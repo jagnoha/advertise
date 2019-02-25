@@ -9,6 +9,8 @@
 import React, {Component} from 'react';
 import MainApp from './Components/MainApp';
 import ToShelf from './Components/ToShelf';
+import Drafts from './Components/Drafts';
+
 //import AppNavigator from './AppNavigator';
 import configureStore from './modules/configureStore.js';
 import { Provider } from 'react-redux';
@@ -29,7 +31,8 @@ export default class App extends Component {
       <Router>          
               <Stack key="root">
                 <Scene key="home" component={MainApp} hideNavBar={true} />
-                <Scene key="toShelf" component={ToShelf} hideNavBar={true} />               
+                <Scene key="toShelf" component={ToShelf} hideNavBar={true} />
+                <Scene key="drafts" component={Drafts} hideNavBar={true} />                
                          
               
               </Stack>

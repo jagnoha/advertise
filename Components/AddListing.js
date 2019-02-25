@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Button, Image, StyleSheet, Text, TextInput, View, ToolbarAndroid, ScrollView, Picker} from 'react-native';
+import {Button, Image, StyleSheet, Text, TextInput, ActivityIndicator, View, ToolbarAndroid, ScrollView, Picker} from 'react-native';
 import { locationsFetchData, listingsFetchData, brandsFetchData, 
        listingDraftUpdated, brandAddDatabase, locationAddDatabase, addNewLocation, 
        listingAddDatabase,userActiveLogout } from '../modules/actions';
@@ -56,6 +56,31 @@ class AddListing extends Component {
 
     }
 
+    validateFields = () => {
+        if (Number(this.state.quantity) < 1){
+            return false
+        }
+
+        if (!this.state.brand){
+            return false
+        }
+
+        if (this.state.title.length <= 0){
+            return false
+        }
+
+
+        if (this.state.partNumberList.length === 0){
+            return false
+        }        
+
+        if (this.state.picturesListTemp.length === 0){
+            return false
+        }
+
+        return true
+    }
+
     onActionSelected = (position) => {
         if (position === 0) {
             Actions.home()           
@@ -67,10 +92,17 @@ class AddListing extends Component {
         }
 
         if (position === 2) {
+            Actions.drafts()           
+
+        }
+
+        if (position === 3) {
             Actions.home();
             this.props.userActiveLogout();
             
         }
+
+        
 
     }
 
@@ -402,18 +434,57 @@ class AddListing extends Component {
                   };
                   let idPic = uuidv4();
                   this.setState({ uploadingPicture: true, picturesListTemp: this.state.picturesListTemp.concat({id: idPic, source: {uri: response.uri}, uri: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]} )});
-                  fetch(this.props.urlBase + '/upload', config)
-                  .then((response) => {
+                  
+                  
+                  
+                  /*fetch(this.props.urlBase + '/upload', config)
+                  .then((responseUpload) => {
             
-                    this.setState({uploadingPicture: false});
+                       //setTimeout(this.setState({uploadingPicture: false}), 2000);
                     
-                    return response
+                    this.setState({uploadingPicture: false});
+                    //console.log(response);
+                    return responseUpload
                 
                    })  
                   .catch((error) => {
                     this.setState({uploadingPicture: false});
+                    
+                    //setTimeout(this.setState({uploadingPicture: false}), 3000);
+
                     console.error(error);
-                  });
+                  });*/
+
+                  function handleErrors(response) {
+                    if (!response.ok) {
+                        throw Error(response.statusText);
+                    }
+                    return response;
+                    }
+                    
+                    fetch(this.props.urlBase + '/upload', config)
+                    .then(handleErrors)
+                    .then(response => this.setState({uploadingPicture: false}))
+                    .catch(error => {
+
+                        
+                            
+                            this.setState({
+                                uploadingPicture: false,
+                                picturesListTemp: this.state.picturesListTemp.filter(item => item.id !== idPic),
+                            })
+                            
+                        
+
+
+                        /*this.setState({
+                            uploadingPicture: false,
+                            picturesListTemp: picturesListTemp.filter(item => item.id !== idPic),
+                        });*/
+                    });
+
+
+
                   
                 
             }                       
@@ -437,7 +508,8 @@ class AddListing extends Component {
         style={styles.toolbar}
         //logo={require('./app_logo.png')}
         title="AdvertisingApp"
-        actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}, {title: 'Logout', show: 'never'}]}
+        actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}, 
+        {title: 'Drafts', show: 'never'}, {title: 'Logout', show: 'never'}]}
         onActionSelected={this.onActionSelected} />
         
         
@@ -451,7 +523,7 @@ class AddListing extends Component {
             title="Add Picture"
             color="#0099cc"
             accessibilityLabel="Add Picture"
-        /> : <Text></Text>
+        /> : <View><ActivityIndicator size="large" color="#0000ff" /></View>
         }
         
 
@@ -702,20 +774,20 @@ class AddListing extends Component {
         </Picker>
 
 
-          
+        
+        {
+            this.validateFields() ?
         <Button
             onPress={this.onPressCreateListing}
             title="Create Listing"
             color="#00cc66"
             accessibilityLabel="Create a new Listing"
-        />
+        /> : <Text></Text>
+        } 
 
-        {/*<Button
-            onPress={this.onPressResetForm}
-            title="Reset"
-            color="#0099cc"
-            accessibilityLabel="Reset Form"
-        />*/}
+        
+
+        
         
 
         

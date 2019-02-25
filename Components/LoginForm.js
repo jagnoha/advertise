@@ -21,7 +21,7 @@ class LoginForm extends Component {
   }
 
   onPressCreateListing = () => {
-    console.log("Hola");
+    //console.log("Hola");
     this.props.userActiveFetchData(this.props.urlBase + '/finduser/' + this.state.username + '/' + this.state.password);
   }
 

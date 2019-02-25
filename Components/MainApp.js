@@ -30,7 +30,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
         this.props.fetchBrands(this.props.urlBase + '/getbrands');
         this.props.fetchLocations(this.props.urlBase + '/getlocations');
         this.props.fetchEbayMarketplaces(this.props.urlBase + '/getebaymarketplaces');
-        this.props.fetchListings(this.props.urlBase + '/getlistings');
+        this.props.fetchListings(this.props.urlBase + '/getlistingsdraft');
         //this.props.fetchCompatibilityManual(this.props.urlBase + '/websitefinder/FORD/7L3Z-14D696-A');
 
         
@@ -49,7 +49,7 @@ import Spinner from 'react-native-loading-spinner-overlay';
         this.props.fetchBrands(this.props.urlBase + '/getbrands');
         this.props.fetchLocations(this.props.urlBase + '/getlocations');
         this.props.fetchEbayMarketplaces(this.props.urlBase + '/getebaymarketplaces');
-        //this.props.fetchListings(urlbase + '/getlistings');
+        this.props.fetchListings(this.props.urlBase + '/getlistingsdraft');
         
         //this.props.fetchEbayMarketplaces('http://192.168.1.11:8083/getebaymarketplaces');
         //this.props.fetchListings('http://192.168.1.11:8083/getlistings', this.props.clickedColumn, this.props.direction === 'ascending' ? 'asc' : 'desc' );

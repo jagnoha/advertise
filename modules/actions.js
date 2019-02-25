@@ -2,6 +2,8 @@ import axios from 'axios';
 import _ from 'lodash';
 import '../helpers.js';
 
+const urlBase = 'https://29508158.ngrok.io';
+
 
 export function locationsHasErrored(bool){
     return {
@@ -28,6 +30,13 @@ export function listingDraftUpdated(listingDraft) {
     return {
         type: 'LISTING_DRAFT_UPDATED',
         listingDraft
+    };
+}
+
+export function listingCheckedUpdated(listingChecked) {
+    return {
+        type: 'LISTING_CHECKED_UPDATED',
+        listingChecked
     };
 }
 
@@ -327,6 +336,8 @@ export function listingsIsLoading(bool){
         isLoading: bool
     };
 }
+
+
 
 export function listingsFetchDataSuccess(listings, clickedColumn, order) {
     return {
@@ -710,7 +721,7 @@ export function fixPicturesListing(list, allListings) {
         let sku = window.helpers.getListingFromId(allListings, item).sku;
         console.log(sku);
         
-        let url = "http://192.168.1.11:8083/fixpictures/" + sku; 
+        let url = urlBase + '/' +  sku; 
         
         axios.get(url, config)
         .then(response => {
@@ -766,5 +777,69 @@ export function fixPicturesListing(list, allListings) {
         .catch(() => dispatch(ebayMarketplacesHasErrored(true)));
     }*/
 
+
+}
+
+export function listingCheckedIsLoading(bool){
+    return {
+        type: 'LISTING_CHECKED_IS_LOADING',
+        isLoading: bool
+    };
+}
+
+export function listingsUpdate(listings){
+    return {
+        type: 'LISTINGS_UPDATE',
+        listings
+    };
+}
+
+export function listingCheckedDeleteDatabase(url, listings) {
+    return (dispatch) => {
+    dispatch(listingCheckedIsLoading(true))    
+    fetch(url,{
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            //'Accept': 'application/json',
+            //'Content-Type': 'application/json',
+        }
+    })
+    .then((response) => {
+
+        dispatch(listingCheckedIsLoading(false));
+        dispatch(listingsUpdate(listings));
+        //dispatch(listingDraftUpdated(listingDraft));
+
+        return response
+    
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+}
+
+export function listingCheckedUpdateDatabase(url, listings) {
+    return (dispatch) => {
+    dispatch(listingCheckedIsLoading(true))    
+    fetch(url,{
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            //'Accept': 'application/json',
+            //'Content-Type': 'application/json',
+        }
+    })
+    .then((response) => {
+
+        dispatch(listingCheckedIsLoading(false));
+        dispatch(listingsUpdate(listings));
+        //dispatch(listingDraftUpdated(listingDraft));
+
+        return response
+    
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
 
 }

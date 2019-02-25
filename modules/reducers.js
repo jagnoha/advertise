@@ -18,6 +18,8 @@ import { newLocation } from './reducers/newLocation';
 import { urlBase } from './reducers/urlBase';
 import { compatibilityManual, compatibilityManualHasErrored, compatibilityManualIsLoading } from './reducers/compatibilityManual';
 import { userActive, userActiveHasErrored, userActiveIsLoading } from './reducers/userActive';
+import { listingChecked, listingCheckedHasErrored, listingCheckedIsLoading } from './reducers/listingChecked';
+
 
 
 
@@ -63,4 +65,7 @@ export default combineReducers({
     userActive,
     userActiveHasErrored,    
     userActiveIsLoading,
+    listingChecked,
+    listingCheckedHasErrored,
+    listingCheckedIsLoading,
 });

@@ -34,6 +34,9 @@ export function listings(state = [], action) {
         
         case 'SORT_LISTINGS':
             return action.listings;
+
+        case 'LISTINGS_UPDATE':
+            return action.listings;
         
         /*case 'FILTER_LISTINGS':
             return action.listings;*/
