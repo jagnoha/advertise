@@ -22,6 +22,8 @@ export function locations(state = [], action) {
     switch (action.type) {
         case 'LOCATIONS_FETCH_DATA_SUCCESS':
             return action.locations;
+        case 'LOCATIONS_UPDATE':
+            return action.locations;    
 
         default:
             return state;

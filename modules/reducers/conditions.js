@@ -18,6 +18,10 @@ export function conditions(state = [
       {
         id: '4',
         type: 'For parts or not working',
+      },
+      {
+        id: '5',
+        type: 'Remanufactured',
       }
 ]) {
     return state

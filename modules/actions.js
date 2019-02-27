@@ -26,6 +26,39 @@ export function locationsFetchDataSuccess(locations) {
     };
 }
 
+export function locationsUpdate(locations){
+    return {
+        type: 'LOCATIONS_UPDATE',
+        locations
+    };
+}
+
+export function locationUpdateDatabase(url, locations) {
+    return (dispatch) => {
+    dispatch(locationsIsLoading(true))    
+    fetch(url,{
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            //'Accept': 'application/json',
+            //'Content-Type': 'application/json',
+        }
+    })
+    .then((response) => {
+
+        dispatch(locationsIsLoading(false));
+        dispatch(locationsUpdate(locations));
+        
+        return response
+    
+    }).catch((error) => {
+      console.error(error);
+    });
+  }
+
+}
+
+
+
 export function listingDraftUpdated(listingDraft) {
     return {
         type: 'LISTING_DRAFT_UPDATED',

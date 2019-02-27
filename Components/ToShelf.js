@@ -17,6 +17,8 @@ const conditionOptions = [
   {value: 'Used', id: '2'},
   {value: 'Manufacturer refurbished', id: '3'},
   {value: 'For parts or not working', id: '4'},
+  {value: 'Remanufactured', id: '5'},
+  
 ]
 ///import { MyListItem } from './MyListItem';
 
@@ -78,7 +80,7 @@ const conditionOptions = [
       const partNumber = this.state.partNumberTemp;
       if (partNumber !== ''){
           this.setState({
-              partNumbers: this.state.partNumbers.concat({id: uuidv4(), partNumber}),
+              partNumbers: this.state.partNumbers.concat({id: uuidv4(), partNumber: partNumber}),
               partNumberTemp: null,
           })
       }            
@@ -349,7 +351,8 @@ const conditionOptions = [
                 <Picker.Item label="New (Other)" value="1" />
                 <Picker.Item label="Used" value="2" />
                 <Picker.Item label="Manufacturer refurbished" value="3" />
-                <Picker.Item label="For parts or not working" value="4" />            
+                <Picker.Item label="For parts or not working" value="4" />
+                <Picker.Item label="Remanufactured" value="5" />            
               </Picker>
 
               </View>
@@ -507,10 +510,21 @@ class ToShelf extends Component {
         )
       }),*/
       toShelfListings: [],
+      allListings: this.props.listings,
       //itemChecked: this.props.listingChecked,
       locations: this.props.locations,
       filterListings: "",
       //totalToShelf: this.props.listings.filter(item => item.location.length === 0).length,
+
+      /*toShelfListings: this.props.listings.map(item => { 
+        return (
+          {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers,
+            quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
+            condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition  }
+        )
+      })*/
+
+
     }
 
     /*componentDidMount(){
@@ -566,6 +580,12 @@ class ToShelf extends Component {
             "description": fields.description,
 
           }
+
+          this.setState({
+            toShelfListings: [],
+            filterListings: "",
+          })
+
           this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatetoshelf/' + id + '/' + encodeURIComponent(JSON.stringify(myFields)), 
           this.state.toShelfListings.filter(item => item.id !== id));
 
@@ -583,22 +603,27 @@ class ToShelf extends Component {
           "condition": fields.conditionId,
           "conditionDescription": [fields.conditionDescription],
           "description": fields.description,
+          
         }
 
         let subListings = this.state.toShelfListings.filter(item => item.id !== id);
         
-        let listing = this.state.toShelfListings.filter(item => item.id === id);
+        let listing = this.state.toShelfListings.filter(item => item.id === id);        
         
-        listing['location'] = myFields.location;
         listing['title'] = myFields.title;
         listing['condition'] = myFields.condition;
         listing['quantity'] = myFields.quantity;
         listing['pictures'] = myFields.pictures;
+        listing['partNumbers'] = myFields.partNumbers;
+        listing['condition'] = myFields.condition;
+        listing['conditionDescription'] = myFields.conditionDescription;
+        listing['description'] = myFields.description;
 
         subListings = subListings.concat(listing);
 
         this.setState({
-          toShelfListings: subListings,
+          toShelfListings: [],
+          filterListings: "",
         })
 
 
@@ -936,6 +961,11 @@ class ToShelf extends Component {
       }
 
       if (position === 3) {
+        Actions.locations();
+        
+    }
+
+      if (position === 4) {
           Actions.home();
           this.props.userActiveLogout();
           
@@ -977,7 +1007,7 @@ class ToShelf extends Component {
         //logo={require('./app_logo.png')}
         title="AdvertisingApp"
         actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}, 
-        {title: 'Drafts', show: 'never'}, {title: 'Logout', show: 'never'}]}
+        {title: 'Drafts', show: 'never'}, {title: 'Locations', show: 'never'}, {title: 'Logout', show: 'never'}]}
         onActionSelected={this.onActionSelected} />
         <View style={styles.container}>
         

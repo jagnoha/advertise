@@ -10,6 +10,7 @@ import React, {Component} from 'react';
 import MainApp from './Components/MainApp';
 import ToShelf from './Components/ToShelf';
 import Drafts from './Components/Drafts';
+import Locations from './Components/Locations';
 
 //import AppNavigator from './AppNavigator';
 import configureStore from './modules/configureStore.js';
@@ -32,7 +33,8 @@ export default class App extends Component {
               <Stack key="root">
                 <Scene key="home" component={MainApp} hideNavBar={true} />
                 <Scene key="toShelf" component={ToShelf} hideNavBar={true} />
-                <Scene key="drafts" component={Drafts} hideNavBar={true} />                
+                <Scene key="drafts" component={Drafts} hideNavBar={true} />
+                <Scene key="locations" component={Locations} hideNavBar={true} />                  
                          
               
               </Stack>

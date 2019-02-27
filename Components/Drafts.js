@@ -1,9 +1,12 @@
 import React, { Component, PureComponent } from 'react';
 import { TextInput, Button, RefreshControl, TouchableHighlight, StyleSheet, 
-  Modal, ScrollView, Text, View, ToolbarAndroid, FlatList, Image} from 'react-native';
+  Modal, ScrollView, Text, View, ToolbarAndroid, FlatList, Image, Picker, ActivityIndicator} from 'react-native';
 import { Badge } from 'react-native-elements';
 import { listingsFetchData, listingCheckedUpdated, listingsUpdate, locationsFetchData, 
   listingCheckedDeleteDatabase, listingCheckedUpdateDatabase, locationAddDatabase, addNewLocation } from '../modules/actions';
+import PartNumberList from './PartNumberList';
+import PicturesList from './PicturesList';
+import ImagePicker from 'react-native-image-picker';
 import '../helpers';
 
 const uuidv4 = require('uuid/v4');
@@ -14,6 +17,7 @@ const conditionOptions = [
   {value: 'Used', id: '2'},
   {value: 'Manufacturer refurbished', id: '3'},
   {value: 'For parts or not working', id: '4'},
+  {value: 'Remanufactured', id: '5'},
 ]
 ///import { MyListItem } from './MyListItem';
 
@@ -29,31 +33,184 @@ const conditionOptions = [
   class MyListItem extends PureComponent {
     
     state = {
+      uploadingPicture: false,
       location: this.props.location,
       //quantity: this.props.listings.filter(item => item.sku === this.props.id)[0].quantity, //this.props.quantity,
       quantity: this.props.quantity,
+      title: this.props.title,
+      description: this.props.description,
+      conditionDescription: this.props.conditionDescription[0],
+      partNumbers: this.props.partNumbers.map(item => { return ({id:uuidv4(), partNumber: item}) }),
+      picturesListTemp: this.props.pictures.map(item => { return ({id: item, 
+        source: {uri: this.props.urlBase + '/images/' + item + '.jpg'}, uri: this.props.urlBase + '/images/' + item + '.jpg'}) }),
+      partNumberTemp: null,
       deleteConfirmation: false,
+      conditionId: this.props.conditionId,
     }
+
+    
     /*_onPress = () => {
       this.props.onPressItem(this.props.id);
       //console.log(this.props.id);
     };*/
   
     _onEndEditing = () => {
-      this.props.editLocation(this.props.id, this.state.location);
-      this.props.editQuantity(this.props.id, this.state.quantity);    
+      /*this.props.editLocation(this.props.id, this.state.location);
+      this.props.editQuantity(this.props.id, this.state.quantity, this.state.picturesListTemp.map(item => item.id), this.state.title,
+        this.state.description, [this.state.conditionDescription], this.state.partNumbers.map(item => item.partNumber), this.state.conditionId );    
+      */
+     this.props.editListing(this.props.id, this.state);
+        
+
     }
 
-    _onEndEditingQuantity = () => {
+    /*_onEndEditingQuantity = () => {
       this.setState({
         quantity: this.state.quantity,
       })
       this.props.editQuantity(this.props.id, this.state.quantity);
-    }
+    }*/
 
     _onPressAcceptDelete = () => {
       this.props.deleteListing(this.props.id);
     }
+
+    finishEditing = () => {
+      const partNumber = this.state.partNumberTemp;
+      if (partNumber !== ''){
+          this.setState({
+              partNumbers: this.state.partNumbers.concat({id: uuidv4(), partNumber: partNumber}),
+              partNumberTemp: null,
+          })
+      }            
+    }
+    
+    deleteItem = (id) => {
+      const list = this.state.partNumbers.filter(item => item.id !== id);
+      this.setState({
+          partNumbers: list,
+      })
+
+    }
+
+    deletePicture = (id) => {
+      const list = this.state.picturesListTemp.filter(item => item.id !== id);
+      this.setState({
+          picturesListTemp: list,
+      })
+
+  }
+
+    pickImageHandler = () => {
+
+      const options = {
+          storageOptions: {
+            skipBackup: true,
+            path: 'images',
+          },
+        };
+
+      ImagePicker.launchCamera(options,(response) => {
+        
+          if (response.didCancel) {
+              console.log('User cancelled image picker');
+            } else if (response.error) {
+              console.log('ImagePicker Error: ', response.error);
+            } else if (response.customButton) {
+              console.log('User tapped custom button: ', response.customButton);
+            } else {
+              const source = { uri: response.uri };
+          
+              // You can also display the image using data:
+              // const source = { uri: 'data:image/jpeg;base64,' + response.data };
+          
+              /*this.setState({
+                avatarSource: source,
+              });*/
+
+              const photo = {
+                  uri: response.uri,
+                  //filename: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1],
+                  //name: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1],
+                  name: 'image.jpg',
+                  type: 'image/jpeg',
+                };
+                const data = new FormData();
+                data.append('file', photo);
+                data.append('name', response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]);
+                const config = {
+                  method: 'POST',
+                  body: data,
+                  headers: {
+                    'Content-Type': 'multipart/form-data',
+                  },
+                };
+                //let idPic = uuidv4();
+                let idPic = response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1];
+                this.setState({ uploadingPicture: true, picturesListTemp: this.state.picturesListTemp.concat({id: idPic, source: {uri: response.uri}, uri: response.uri.split('/')[response.uri.split('/').length-1].split('.')[0].split('image-')[1]} )});
+                
+                
+                
+                /*fetch(this.props.urlBase + '/upload', config)
+                .then((responseUpload) => {
+          
+                     //setTimeout(this.setState({uploadingPicture: false}), 2000);
+                  
+                  this.setState({uploadingPicture: false});
+                  //console.log(response);
+                  return responseUpload
+              
+                 })  
+                .catch((error) => {
+                  this.setState({uploadingPicture: false});
+                  
+                  //setTimeout(this.setState({uploadingPicture: false}), 3000);
+
+                  console.error(error);
+                });*/
+
+                function handleErrors(response) {
+                  if (!response.ok) {
+                      throw Error(response.statusText);
+                  }
+                  return response;
+                  }
+                  
+                  fetch(this.props.urlBase + '/upload', config)
+                  .then(handleErrors)
+                  .then(response => this.setState({uploadingPicture: false}))
+                  .catch(error => {
+
+                      
+                          
+                          this.setState({
+                              uploadingPicture: false,
+                              picturesListTemp: this.state.picturesListTemp.filter(item => item.id !== idPic),
+                          })
+                          
+                      
+
+
+                      /*this.setState({
+                          uploadingPicture: false,
+                          picturesListTemp: picturesListTemp.filter(item => item.id !== idPic),
+                      });*/
+                  });
+
+
+
+                
+              
+          }                       
+
+      });
+
+      
+      
+        
+    }
+
+    
 
     render() {
       let urlPic = this.props.urlBase + '/images/' + this.props.pictures[0] + '.jpg';
@@ -63,6 +220,11 @@ const conditionOptions = [
         <TouchableHighlight onPress={() => this.props.onPressItem(this.props.id)}>
           <View style={ (this.props.itemChecked === this.props.id) ? styles.selectedItem : null }>
             <View style={styles.container}>
+            
+
+            {
+                (this.props.itemChecked !== this.props.id) &&
+            <View>
             <Image
               resizeMethod="resize"
               style={{ width: 180, height: 100 }}
@@ -76,28 +238,177 @@ const conditionOptions = [
                 style={{ width: 180, height: 100 }}
                 source = { {uri: urlPic2 }}
                  />
-                <Text style={styles.text} onPress={() => this.props.onPressItem(this.props.id)} >{this.props.title} </Text>
-                <Text style={styles.condition} onPress={() => this.props.onPressItem(this.props.id)} >{this.props.condition} </Text>
-                <Text style={styles.partNumber} onPress={() => this.props.onPressItem(this.props.id)} >PN: {this.props.partNumber} </Text>
+              </View>
+            }
+
+            {
+                (this.props.itemChecked === this.props.id) && (this.state.deleteConfirmation) &&
+                <View style={styles.container}>
+                  <Image
+              resizeMethod="resize"
+              style={{ width: 180, height: 100 }}
+              source = { {uri: urlPic }} 
+              
+              />
+              
+
+              <Image
+                resizeMethod="resize"
+                style={{ width: 180, height: 100 }}
+                source = { {uri: urlPic2 }}
+                 />
+                <Text style={styles.text}  >{this.props.title} </Text>
+                <Text style={styles.condition}  >{this.props.condition} </Text>
+                <Text style={styles.partNumber}  >PN: {this.props.partNumber} </Text>  
+                </View>
+            
+            }
+
+            {
+                (this.props.itemChecked === this.props.id) && (!this.state.deleteConfirmation) &&
+                <View style={styles.placeholderPicture}>
+                 { this.state.picturesListTemp.length > 0 ? <View ><PicturesList deletePicture = {this.deletePicture} pictures={this.state.picturesListTemp} />
+                 </View> : <Text></Text>}
+                 
+                 { this.state.uploadingPicture === false ?
+                 <Button
+                     onPress={this.pickImageHandler}
+                     title="Add Picture"
+                     color="#0099cc"
+                     accessibilityLabel="Add Picture"
+                 /> : <View><ActivityIndicator size="large" color="#0000ff" /></View>
+                 }
+                 </View>
                 
+              }
+
+
+
+
+
                 {
                   (this.props.itemChecked !== this.props.id) &&
-                <View>
-                <Text style={styles.quantity} onPress={() => this.props.onPressItem(this.props.id)} >Quantity: {this.props.quantity} </Text>
-                <Text style={styles.quantity} onPress={() => this.props.onPressItem(this.props.id)} >Location: {this.props.location} </Text>
-                </View>
+                  <View style={styles.container}>
+                  <Text style={styles.text} onPress={() => this.props.onPressItem(this.props.id)} >{this.props.title} </Text>
+                  <Text style={styles.condition} onPress={() => this.props.onPressItem(this.props.id)} >{this.props.condition} </Text>
+                  <Text style={styles.partNumber} onPress={() => this.props.onPressItem(this.props.id)} >PN: {this.props.partNumber} </Text>
+                  <Text style={styles.quantity} onPress={() => this.props.onPressItem(this.props.id)} >Quantity: {this.props.quantity} </Text>
+                  <Text style={styles.quantity} onPress={() => this.props.onPressItem(this.props.id)} >Location: {this.props.location} </Text>
+                  </View>
                 }
                 {
                   (this.props.itemChecked === this.props.id) && (!this.state.deleteConfirmation) &&
 
                 <View>
+                <Text style={styles.text} >Title</Text>
+                <TextInput
+                  /*onSubmitEditing={() => {
+                    this.focusNextField('partnumbers');
+                  }}*/
+                  //onEndEditing = {this._onEndEditing}
+                  style={styles.titleInput}
+                  placeholder="Enter Title"
+                  placeholderTextColor="white"
+                  onChangeText={(title) => this.setState({title})}
+                  autoCapitalize = "characters"
+                  maxLength={80}
+                  autoCorrect={false}
+                  value={this.state.title}
+                />
+                
+                <View style={styles.frameContent}>
+
+                <Text style={styles.text}>Part Numbers</Text>
+        
+                <TextInput                
+                value={this.state.partNumberTemp}
+                style={styles.titleInput}
+                placeholder="Add Part Number"
+                placeholderTextColor="white"
+                onChangeText={(partNumberTemp) => this.setState({partNumberTemp})}
+                autoCapitalize = "characters"
+                onEndEditing = {this.finishEditing}
+                maxLength={30}
+                autoCorrect={false}
+                />  
+                <PartNumberList deleteItem = {this.deleteItem} partNumbers = {this.state.partNumbers} />
+                    
+                </View>
+                
+                
+                <View style={styles.frameContent}>    
+
+                <Text style={styles.text}>Condition</Text>
+              <Picker
+                //style={styles.text}
+                style={styles.conditionInput}
+                prompt="Select Condition"
+                //mode="dropdown"
+                selectedValue={this.state.conditionId}
+                //style={{ height: 50, width: 100 }}
+                onValueChange={(itemValue, itemIndex) => this.setState({conditionId: itemValue})}>
+                <Picker.Item label="New" value= "0" />
+                <Picker.Item label="New (Other)" value="1" />
+                <Picker.Item label="Used" value="2" />
+                <Picker.Item label="Manufacturer refurbished" value="3" />
+                <Picker.Item label="For parts or not working" value="4" />            
+              </Picker>
+
+              </View>
+
+              </View>
+              }
+
+              {
+                (this.props.itemChecked === this.props.id) && (!this.state.deleteConfirmation) && (Number(this.state.conditionId) > 0) &&
+                <View style={styles.frameContentAditional}>
+                <Text style={styles.text} >Condition Description</Text>                
+                <TextInput
+                  /*onSubmitEditing={() => {
+                    this.focusNextField('partnumbers');
+                  }}*/
+                  //onEndEditing = {this._onEndEditing}
+                  style={styles.titleInput}
+                  placeholder="Enter Condition Description"
+                  placeholderTextColor="white"
+                  onChangeText={(conditionDescription) => this.setState({conditionDescription})}
+                  autoCapitalize = "characters"
+                  //maxLength={80}
+                  autoCorrect={false}
+                  value={this.state.conditionDescription}
+                />
+                </View>
+              }
+
+               {
+                (this.props.itemChecked === this.props.id) && (!this.state.deleteConfirmation) &&
+                <View>
+                <Text style={styles.text} >Description</Text>
+                <TextInput
+                  /*onSubmitEditing={() => {
+                    this.focusNextField('partnumbers');
+                  }}*/
+                  //onEndEditing = {this._onEndEditing}
+                  style={styles.titleInput}
+                  placeholder="Enter Description"
+                  placeholderTextColor="white"
+                  onChangeText={(description) => this.setState({description})}
+                  autoCapitalize = "characters"
+                  multiline = {true}
+                  numberOfLines = {4}
+                  //maxLength={80}
+                  autoCorrect={false}
+                  value={this.state.description}
+                />
+
+
                 <Text style={styles.text} >Quantity</Text>
                 <TextInput
                   /*onSubmitEditing={() => {
                     this.focusNextField('partnumbers');
                   }}*/
                   //onEndEditing = {this._onEndEditingQuantity}
-                  style={styles.titleInput}
+                  style={styles.LocationInput}
                   //placeholder="Enter Quantity"
                   placeholderTextColor="white"
                   onChangeText={(quantity) => this.setState({quantity})}
@@ -109,12 +420,14 @@ const conditionOptions = [
                   //value={String(this.props.quantity)}
                 />
 
+                
+                <Text style={styles.text} >Location</Text>
                 <TextInput
                   /*onSubmitEditing={() => {
                     this.focusNextField('partnumbers');
                   }}*/
                   //onEndEditing = {this._onEndEditing}
-                  style={styles.titleInput}
+                  style={styles.LocationInput}
                   placeholder="Enter Location"
                   placeholderTextColor="white"
                   onChangeText={(location) => this.setState({location})}
@@ -219,6 +532,103 @@ class Drafts extends Component {
       })*/
     }
 
+
+    editListing = (id, fields) => {
+      this.props.listingCheckedUpdated("");
+
+      let tempLocation = '';
+
+      if (fields.location !== ""){
+
+        if (this.state.locations.filter(item => item.value.toUpperCase() === fields.location.toUpperCase()).length === 0){
+            tempLocation = uuidv4();
+            this.props.locationAddDatabase(this.props.urlBase + '/addlocation/' + tempLocation + '/' + fields.location.toUpperCase(), 
+            tempLocation, fields.location);
+            this.setState({
+              locations: this.state.locations.concat({id: tempLocation, value: fields.location}),
+            });
+          } else {
+            tempLocation = this.state.locations.filter(item => item.value.toUpperCase() === fields.location.toUpperCase())[0].id
+          }
+
+          this.setState({
+            toShelfListings: this.state.toShelfListings.filter(item => item.id !== id),
+          })
+
+          const myFields = {
+            "sku": id,
+            "location": [tempLocation],
+            "title": fields.title,
+            "condition": fields.conditionId,
+            "quantity": fields.quantity,
+            "pictures": fields.picturesListTemp.map(item => item.id),
+            "partNumbers": fields.partNumbers.map(item => item.partNumber),
+            "condition": fields.conditionId,
+            "conditionDescription": [fields.conditionDescription],
+            "description": fields.description,
+
+          }
+          this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatetoshelf/' + id + '/' + encodeURIComponent(JSON.stringify(myFields)), 
+          this.state.toShelfListings.filter(item => item.id !== id));
+
+
+      } else {
+        tempLocation = '';
+        const myFields = {
+          "sku": id,
+          "location": [],
+          "title": fields.title,
+          "condition": fields.conditionId,
+          "quantity": fields.quantity,
+          "pictures": fields.picturesListTemp.map(item => item.id),
+          "partNumbers": fields.partNumbers.map(item => item.partNumber),
+          "condition": fields.conditionId,
+          "conditionDescription": [fields.conditionDescription],
+          "description": fields.description,
+        }
+
+        let subListings = this.state.toShelfListings.filter(item => item.id !== id);
+        
+        let listing = this.state.toShelfListings.filter(item => item.id === id);
+        
+        listing['location'] = myFields.location;
+        listing['title'] = myFields.title;
+        listing['condition'] = myFields.condition;
+        listing['quantity'] = myFields.quantity;
+        listing['pictures'] = myFields.pictures;
+        listing['partNumbers'] = myFields.partNumbers;
+        listing['condition'] = myFields.condition;
+        listing['conditionDescription'] = myFields.conditionDescription;
+        listing['description'] = myFields.description;
+
+        subListings = subListings.concat(listing);
+
+        this.setState({
+          toShelfListings: [],
+          filterListings: "",
+        })
+
+
+        this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatetoshelf/' + id + '/' + encodeURIComponent(JSON.stringify(myFields)),
+        subListings);          
+      }
+
+      //pictures, title, description, conditionDescription, partnumbers, conditionId
+
+      /*this.setState({
+        toShelfListings: [],
+        filterListings: "",
+      })*/
+
+      
+
+      
+
+
+    }
+
+
+
     editLocation = (id, location) => {
 
       this.props.listingCheckedUpdated("");
@@ -257,9 +667,11 @@ class Drafts extends Component {
 
             
 
+            
+
     }
 
-    editQuantity = (id, quantity) => {
+    editQuantity = (id, quantity, pictures, title, description, conditionDescription, partnumbers, conditionId) => {
 
       this.props.listingCheckedUpdated("");
       
@@ -270,8 +682,10 @@ class Drafts extends Component {
                 let tempList = this.state.toShelfListings.map(item => {
 
                     if (item.sku === id){
-                      return {key: item.key, id: item.id, title: item.title, partNumber: item.partNumber,
-                      condition: item.condition, quantity: quantity, pictures: item.pictures, location: item.location}
+                      return {key: item.key, id: item.id, title: item.title, partNumber: item.partNumber, 
+                        partNumbers: item.partNumbers, description: item.description,
+                        condition: item.condition, quantity: quantity, pictures: item.pictures, 
+                        location: item.location, conditionDescription: item.conditionDescription, conditionId: item.conditionId}
                     } else {
                       return item
                     }
@@ -292,7 +706,9 @@ class Drafts extends Component {
 
                 //let finalList = tempList.concat(chooseItem);
 
-                this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatequantity/' + id + '/' + quantity, 
+                this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatequantity/' + id + '/' + quantity + 
+                '/' + pictures + '/' + title + '/' + description + '/' + conditionDescription + '/' + partnumbers +
+                '/' + conditionId, 
                 tempList);
 
                 //this.props.listingsUpdate(tempList);
@@ -363,14 +779,19 @@ class Drafts extends Component {
         urlBase={this.props.urlBase}
         editLocation={this.editLocation}
         editQuantity={this.editQuantity}
+        editListing={this.editListing}
         deleteListing={this.deleteListing}
-        location={this.props.locations.filter(itemLoc => itemLoc.id === item.location[0])[0].value}
-        //location={this.props.locations.filter(itemLocation => itemLocation.id === item.location[0])[0].value}
         //extraData={{itemChecked: this.props.listingChecked}}
         itemChecked={this.props.listingChecked}
-        //listings={this.props.listings}
+        location={this.props.locations.filter(itemLoc => itemLoc.id === item.location[0])[0].value}
+        listings={this.props.listings}
         condition={item.condition}
+        conditionId={item.conditionId}
         quantity={item.quantity}
+        partNumbers={item.partNumbers}
+        description={item.description}
+        conditionDescription={item.conditionDescription}
+        urlBase={this.props.urlBase}
         //quantity={this.props.listings.filter(itemListing => itemListing.sku === item.id)}
       />
       
@@ -390,9 +811,10 @@ class Drafts extends Component {
           toShelfListings: this.props.listings.map(item => { 
           
           return (
-            {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], 
+            {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers, 
               condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, 
-              quantity: item.quantity, pictures: item.pictures, location: item.location}
+              quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
+              conditionId: item.condition}
           )
         
         
@@ -461,9 +883,9 @@ class Drafts extends Component {
           this.setState({
             toShelfListings: this.props.listings.map(item => { 
             return (
-              {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], 
-                quantity: item.quantity, pictures: item.pictures, location: item.location,
-                condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value}
+              {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers,
+                quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
+                condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition  }
             )
           }).filter(item => item.location.length > 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
           || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase()))              
@@ -527,6 +949,11 @@ class Drafts extends Component {
       }
 
       if (position === 3) {
+        Actions.locations();
+        
+    }
+
+      if (position === 4) {
           Actions.home();
           this.props.userActiveLogout();
           
@@ -568,7 +995,7 @@ class Drafts extends Component {
         //logo={require('./app_logo.png')}
         title="AdvertisingApp"
         actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}, 
-        {title: 'Drafts', show: 'never'}, {title: 'Logout', show: 'never'}]}
+        {title: 'Drafts', show: 'never'}, {title: 'Locations', show: 'never'}, {title: 'Logout', show: 'never'}]}
         onActionSelected={this.onActionSelected} />
         <View style={styles.container}>
         
@@ -595,7 +1022,7 @@ class Drafts extends Component {
             this.focusNextField('partnumbers');
           }}*/
           style={styles.filterListings}
-          placeholder="Search Listings to Shelf"
+          placeholder="Search Draft Listings"
           onChangeText={(filterListings) => this.setState({filterListings})}
           autoCapitalize = "characters"
           maxLength={50}
@@ -656,6 +1083,23 @@ class Drafts extends Component {
       alignItems: 'stretch',
       backgroundColor: '#F5FCFF',
     },
+    frameContent: {
+      marginTop: 10,
+      marginBottom: 10,
+      backgroundColor: 'white',
+      paddingLeft: 10,
+      paddingRight: 10,
+    },
+    frameContentAditional: {
+      marginTop: -5,
+      marginBottom: 10,
+      marginLeft: 5,
+      marginRight: 5,
+      backgroundColor: 'white',
+      paddingLeft: 10,
+      paddingRight: 10,
+    },
+
     selectedItem: {      
       //flex: 1,
       backgroundColor: '#9BE1FF',
@@ -675,6 +1119,15 @@ class Drafts extends Component {
       //justifyContent: 'center',
       alignItems: 'center',
       //backgroundColor: '#F5FCFF'
+    },
+    placeholderPicture: {
+      //borderWidth: 1,
+      //borderColor: "black",
+      backgroundColor: "white",
+      width: "100%",
+      padding: 10,
+      //height: 280,
+      //marginTop:50,
     },
     placeholder: {
       //borderWidth: 1,
@@ -697,6 +1150,36 @@ class Drafts extends Component {
     //height: 40,
     //borderColor: '#B7B7B7',
     //placeholderColor: 'white',
+    //marginLeft: 15,
+    //marginRight: 15,
+    marginBottom: 10,
+    borderColor: 'white',
+    color: 'white',
+    backgroundColor: 'black',
+    borderWidth: 3,
+    fontSize: 18,
+},
+conditionInput: {
+  //margin: 15,
+  //height: 40,
+  //borderColor: '#B7B7B7',
+  //placeholderColor: 'white',
+  //marginLeft: 15,
+  //marginRight: 15,
+  marginBottom: 10,
+  borderColor: 'white',
+  color: 'white',
+  backgroundColor: 'black',
+  borderWidth: 3,
+  //fontSize: 18,
+},
+  LocationInput: {
+    //margin: 15,
+    //height: 40,
+    //borderColor: '#B7B7B7',
+    //placeholderColor: 'white',
+    marginLeft: 25,
+    marginRight: 25,
     marginBottom: 10,
     borderColor: 'white',
     color: 'white',

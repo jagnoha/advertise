@@ -97,6 +97,11 @@ class AddListing extends Component {
         }
 
         if (position === 3) {
+            Actions.locations();
+            
+        }
+
+        if (position === 4) {
             Actions.home();
             this.props.userActiveLogout();
             
@@ -509,7 +514,7 @@ class AddListing extends Component {
         //logo={require('./app_logo.png')}
         title="AdvertisingApp"
         actions={[{title: 'Advertise', show: 'never'}, {title: 'To Shelf', show: 'never'}, 
-        {title: 'Drafts', show: 'never'}, {title: 'Logout', show: 'never'}]}
+        {title: 'Drafts', show: 'never'}, {title: 'Locations', show: 'never'}, {title: 'Logout', show: 'never'}]}
         onActionSelected={this.onActionSelected} />
         
         
