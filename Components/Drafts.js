@@ -568,6 +568,12 @@ class Drafts extends Component {
             "description": fields.description,
 
           }
+
+          this.setState({
+            toShelfListings: [],
+            filterListings: "",
+          })
+
           this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatetoshelf/' + id + '/' + encodeURIComponent(JSON.stringify(myFields)), 
           this.state.toShelfListings.filter(item => item.id !== id));
 
@@ -818,8 +824,7 @@ class Drafts extends Component {
           )
         
         
-        }).filter(item => item.location.length > 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
-        || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase())) 
+        }).filter(item => item.location.length > 0 && JSON.stringify(item).toLowerCase().includes(this.state.filterListings.toLowerCase())         
         )
         })
 
@@ -887,8 +892,7 @@ class Drafts extends Component {
                 quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
                 condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition  }
             )
-          }).filter(item => item.location.length > 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
-          || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase()))              
+          }).filter(item => item.location.length > 0 && JSON.stringify(item).toLowerCase().includes(this.state.filterListings.toLowerCase())         
           )
           })
 

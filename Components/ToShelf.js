@@ -2,7 +2,7 @@ import React, { Component, PureComponent } from 'react';
 import { TextInput, Button, RefreshControl, TouchableHighlight, StyleSheet, 
   Modal, ScrollView, Text, View, ToolbarAndroid, FlatList, Image, Picker, ActivityIndicator} from 'react-native';
 import { Badge } from 'react-native-elements';
-import { listingsFetchData, listingCheckedUpdated, listingsUpdate, locationsFetchData, 
+import { listingsFetchData, brandsFetchData, listingCheckedUpdated, listingsUpdate, locationsFetchData, 
   listingCheckedDeleteDatabase, listingCheckedUpdateDatabase, locationAddDatabase, addNewLocation } from '../modules/actions';
 import PartNumberList from './PartNumberList';
 import PicturesList from './PicturesList';
@@ -47,6 +47,7 @@ const conditionOptions = [
       partNumberTemp: null,
       deleteConfirmation: false,
       conditionId: this.props.conditionId,
+      brand: this.props.brand,
     }
 
     
@@ -294,8 +295,33 @@ const conditionOptions = [
                   <Text style={styles.condition} onPress={() => this.props.onPressItem(this.props.id)} >{this.props.condition} </Text>
                   <Text style={styles.partNumber} onPress={() => this.props.onPressItem(this.props.id)} >PN: {this.props.partNumber} </Text>
                   <Text style={styles.quantity} onPress={() => this.props.onPressItem(this.props.id)} >Quantity: {this.props.quantity} </Text>
+                  
                   </View>
                 }
+
+                {
+                  (this.props.itemChecked !== this.props.id) && this.props.itemCheckedLocation !== this.props.id &&
+                    <Text style={styles.changeLocation} onPress={() => this.props.onPressLocation(this.props.id)} >Edit Location</Text>
+                }
+
+                {
+                  (this.props.itemChecked !== this.props.id) && this.props.itemCheckedLocation === this.props.id &&
+                     <TextInput
+                     /*onSubmitEditing={() => {
+                       this.focusNextField('partnumbers');
+                     }}*/
+                     onEndEditing = {this._onEndEditing}
+                     style={styles.LocationInput}
+                     placeholder="Enter Location"
+                     placeholderTextColor="white"
+                     onChangeText={(location) => this.setState({location})}
+                     autoCapitalize = "characters"
+                     maxLength={20}
+                     autoCorrect={false}
+                     value={this.state.location}
+                   />
+                }
+
                 {
                   (this.props.itemChecked === this.props.id) && (!this.state.deleteConfirmation) &&
 
@@ -314,6 +340,22 @@ const conditionOptions = [
                   maxLength={80}
                   autoCorrect={false}
                   value={this.state.title}
+                />
+
+                <Text style={styles.text} >Brand</Text>
+                <TextInput
+                  /*onSubmitEditing={() => {
+                    this.focusNextField('partnumbers');
+                  }}*/
+                  //onEndEditing = {this._onEndEditing}
+                  style={styles.titleInput}
+                  placeholder="Enter Brand"
+                  placeholderTextColor="white"
+                  onChangeText={(brand) => this.setState({brand})}
+                  autoCapitalize = "characters"
+                  maxLength={60}
+                  autoCorrect={false}
+                  value={this.state.brand}
                 />
                 
                 <View style={styles.frameContent}>
@@ -514,6 +556,7 @@ class ToShelf extends Component {
       //itemChecked: this.props.listingChecked,
       locations: this.props.locations,
       filterListings: "",
+      checkLocation: "",
       //totalToShelf: this.props.listings.filter(item => item.location.length === 0).length,
 
       /*toShelfListings: this.props.listings.map(item => { 
@@ -535,9 +578,18 @@ class ToShelf extends Component {
             
     }*/
 
+    _onPressLocation = (id) => {
+      this.setState({
+        checkLocation: id,
+      })
+    }
+
     _onPressItem = (id) => {
-      
+      this.setState({
+        checkLocation: "",
+      })
       this.props.listingCheckedUpdated(id);
+      
       
       /*this.setState({
         itemChecked: id,
@@ -549,6 +601,21 @@ class ToShelf extends Component {
       this.props.listingCheckedUpdated("");
 
       let tempLocation = '';
+
+      let tempBrand = '';
+
+      let brandSearch = this.props.brands.filter(item => item.value.toUpperCase() === fields.brand.toUpperCase());
+            
+            //let brandSearch = this.props.brands.filter(item => item.value.includes(brand));
+
+            if (brandSearch.length === 0){
+                tempBrand = uuidv4();
+                this.props.brandAddDatabase(this.props.urlBase + '/addbrand/' + tempBrand + '/' + fields.brand.toUpperCase(), tempBrand, fields.brand);
+            } else {
+                tempBrand = brandSearch[0].id;
+            } 
+
+
 
       if (fields.location !== ""){
 
@@ -578,6 +645,7 @@ class ToShelf extends Component {
             "condition": fields.conditionId,
             "conditionDescription": [fields.conditionDescription],
             "description": fields.description,
+            "brand": tempBrand,
 
           }
 
@@ -603,6 +671,7 @@ class ToShelf extends Component {
           "condition": fields.conditionId,
           "conditionDescription": [fields.conditionDescription],
           "description": fields.description,
+          "brand": tempBrand,
           
         }
 
@@ -618,6 +687,7 @@ class ToShelf extends Component {
         listing['condition'] = myFields.condition;
         listing['conditionDescription'] = myFields.conditionDescription;
         listing['description'] = myFields.description;
+        listing['brand'] = myFields.brand;
 
         subListings = subListings.concat(listing);
 
@@ -785,6 +855,8 @@ class ToShelf extends Component {
       <MyListItem
         id={item.id}
         onPressItem={this._onPressItem}
+        onPressLocation={this._onPressLocation}
+        brand={this.props.brands.filter(itemBrand => itemBrand.id === item.brand)[0].value}
         //selected={!!this.state.selected.get(item.id)}
         title={item.title}
         pictures={item.pictures}
@@ -796,6 +868,7 @@ class ToShelf extends Component {
         deleteListing={this.deleteListing}
         //extraData={{itemChecked: this.props.listingChecked}}
         itemChecked={this.props.listingChecked}
+        itemCheckedLocation={this.state.checkLocation}
         //listings={this.props.listings}
         condition={item.condition}
         conditionId={item.conditionId}
@@ -814,26 +887,46 @@ class ToShelf extends Component {
       this.props.fetchListings(this.props.urlBase + '/getlistingsdraft');
 
       this.props.listingCheckedUpdated("");
+      this.setState({
+        checkLocation: "",
+      })
 
       if (this.state.filterListings.length > 0){
 
        try { 
 
-        this.setState({
+        /*this.setState({
           toShelfListings: this.props.listings.map(item => { 
           
           return (
             {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers, 
               condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, 
               quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
-              conditionId: item.condition}
+              conditionId: item.condition, brand: item.brand}
           )
         
         
         }).filter(item => item.location.length === 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
         || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase())) 
         )
+        })*/
+
+        this.setState({
+          toShelfListings: this.props.listings.map(item => { 
+          return (
+            {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers,
+              quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
+              condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition,
+              brand: item.brand  }
+          )
+        }).filter(item => item.location.length === 0 && JSON.stringify(item).toLowerCase().includes(this.state.filterListings.toLowerCase())         
+        ),
+        checkLocation: "",
         })
+
+
+
+
 
       } catch(error){
         console.log(error);
@@ -891,22 +984,42 @@ class ToShelf extends Component {
         try {    
 
           if (this.state.filterListings.length > 0){
+          
+          /*this.setState({
+            toShelfListings: this.props.listings.map(item => { 
+            return (
+              {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers,
+                quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
+                condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition,
+                brand: item.brand  }
+            )
+          }).filter(item => item.location.length === 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
+          || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase()))              
+          ),
+          checkLocation: "",
+          })*/
 
           this.setState({
             toShelfListings: this.props.listings.map(item => { 
             return (
               {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers,
                 quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
-                condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition  }
+                condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition,
+                brand: item.brand  }
             )
-          }).filter(item => item.location.length === 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase())
-          || item.partNumber.toLowerCase().includes(this.state.filterListings.toLowerCase()))              
-          )
+          }).filter(item => item.location.length === 0 && JSON.stringify(item).toLowerCase().includes(this.state.filterListings.toLowerCase())         
+          ),
+          checkLocation: "",
           })
+
+
+
 
         } else {
           this.setState({
-            toShelfListings: [],
+            toShelfListings: [],            
+            checkLocation: "",
+
           })
         }
 
@@ -1226,6 +1339,19 @@ quantity: {
   fontSize: 22,
   color: 'blue',              
 },
+changeLocation: {
+  //backgroundColor: 'black',
+  borderWidth: 2,
+  borderColor: 'black',
+  padding: 10,
+  marginLeft: 15,
+  marginRight: 15,
+  marginBottom: 10,
+  marginTop: 5,
+  fontWeight: 'bold',
+  fontSize: 24,
+  color: 'green',
+},
 condition: {
   marginLeft: 15,
   marginRight: 15,
@@ -1248,12 +1374,14 @@ condition: {
         listingChecked: state.listingChecked,
         listingCheckedIsLoading: state.listingCheckedIsLoading,
         locations: state.locations,
+        brands: state.brands,
     };
   };
   
   const mapDispatchToProps = (dispatch) => {
     return {
-      fetchLocations: (url) => dispatch(locationsFetchData(url)),      
+      fetchLocations: (url) => dispatch(locationsFetchData(url)),
+      fetchBrands: (url) => dispatch(brandsFetchData(url)),       
       fetchListings: (url, clickedColumn, order) => dispatch(listingsFetchData(url, clickedColumn, order)),
       listingCheckedUpdated: (listingChecked) => dispatch(listingCheckedUpdated(listingChecked)),
       locationAddDatabase: (url, id, value) => dispatch(locationAddDatabase(url, id, value)),
