@@ -1,6 +1,7 @@
 import axios from 'axios';
 import _ from 'lodash';
 import '../helpers.js';
+import { showMessage, hideMessage } from "react-native-flash-message";
 
 const urlBase = 'https://29508158.ngrok.io';
 
@@ -33,7 +34,7 @@ export function locationsUpdate(locations){
     };
 }
 
-export function locationUpdateDatabase(url, locations) {
+export function locationUpdateDatabase(url, locations, locationValue, oldLocationValue) {
     return (dispatch) => {
     dispatch(locationsIsLoading(true))    
     fetch(url,{
@@ -47,6 +48,14 @@ export function locationUpdateDatabase(url, locations) {
 
         dispatch(locationsIsLoading(false));
         dispatch(locationsUpdate(locations));
+        showMessage({
+            message: 'Modified',
+            description: "Location changed from " + oldLocationValue + " to " + locationValue,
+            type: 'success',
+            icon: 'auto',
+            duration: 2000,
+            autoHide: false,
+        })
         
         return response
     
@@ -182,6 +191,14 @@ export function listingAddDatabase(url, listingDraft) {
 
         dispatch(listingDraftIsLoading(false));
         dispatch(listingDraftUpdated(listingDraft));
+        showMessage({
+            message: 'Created',
+            description: listingDraft.title,
+            type: 'success',
+            icon: 'auto',
+            duration: 2000,
+            autoHide: false,
+          })
 
         return response
     
@@ -372,16 +389,10 @@ export function listingsIsLoading(bool){
 
 
 
-export function listingsFetchDataSuccess(listings, clickedColumn, order) {
+export function listingsFetchDataSuccess(listings) {
     return {
         type: 'LISTINGS_FETCH_DATA_SUCCESS',
-        listings: _.orderBy(listings, (item => {
-            if (clickedColumn === 'price'){  
-                return parseFloat(item[clickedColumn]);
-            } else {
-                return item[clickedColumn];
-            }
-        }),[order])
+        listings,
     };
 }
 
@@ -827,7 +838,7 @@ export function listingsUpdate(listings){
     };
 }
 
-export function listingCheckedDeleteDatabase(url, listings) {
+export function listingCheckedDeleteDatabase(url, listings, listingDeleted) {
     return (dispatch) => {
     dispatch(listingCheckedIsLoading(true))    
     fetch(url,{
@@ -841,6 +852,14 @@ export function listingCheckedDeleteDatabase(url, listings) {
 
         dispatch(listingCheckedIsLoading(false));
         dispatch(listingsUpdate(listings));
+        showMessage({
+            message: 'Deleted',
+            description: listingDeleted.title,
+            type: 'danger',
+            icon: 'auto',
+            duration: 2000,
+            autoHide: false,
+          });
         //dispatch(listingDraftUpdated(listingDraft));
 
         return response
@@ -852,7 +871,7 @@ export function listingCheckedDeleteDatabase(url, listings) {
 
 }
 
-export function listingCheckedUpdateDatabase(url, listings) {
+export function listingCheckedUpdateDatabase(url, listings, myFields) {
     return (dispatch) => {
     dispatch(listingCheckedIsLoading(true))    
     fetch(url,{
@@ -866,6 +885,14 @@ export function listingCheckedUpdateDatabase(url, listings) {
 
         dispatch(listingCheckedIsLoading(false));
         dispatch(listingsUpdate(listings));
+        showMessage({
+            message: 'Updated',
+            description: myFields.title,
+            type: 'success',
+            icon: 'auto',
+            duration: 2000,
+            autoHide: false,
+          })
         //dispatch(listingDraftUpdated(listingDraft));
 
         return response

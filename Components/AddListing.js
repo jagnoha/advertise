@@ -15,6 +15,7 @@ const uuidv4 = require('uuid/v4');
   import ConditionDescription from './ConditionDescription';
   import Spinner from 'react-native-loading-spinner-overlay';
   import ImagePicker from 'react-native-image-picker';
+  import { showMessage, hideMessage } from "react-native-flash-message";
   //import { newBrand } from '../modules/reducers/newBrand';
 
 
@@ -293,6 +294,14 @@ class AddListing extends Component {
           //encodeURIComponent(JSON.stringify(fields))
 
           this.props.listingAddDatabase(this.props.urlBase + '/createlisting/' + fields.sku + '/' + encodeURIComponent(JSON.stringify(fields)), fields);
+          
+          /*showMessage({
+            message: 'Created',
+            description: fields.title,
+            type: 'success',
+            icon: 'auto',
+            duration: 2500,
+          });*/
 
           this.setState({
             title: "",
@@ -317,6 +326,8 @@ class AddListing extends Component {
             customConditionDescription: "",
             //avatarSource: null,                    
         })
+
+        
 
       }
 

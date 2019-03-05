@@ -8,6 +8,7 @@ import PartNumberList from './PartNumberList';
 import PicturesList from './PicturesList';
 import ImagePicker from 'react-native-image-picker';
 import '../helpers.js';
+import { showMessage, hideMessage } from "react-native-flash-message";
 
 const uuidv4 = require('uuid/v4');
 
@@ -557,6 +558,7 @@ class ToShelf extends Component {
       locations: this.props.locations,
       filterListings: "",
       checkLocation: "",
+      showAll: false,
       //totalToShelf: this.props.listings.filter(item => item.location.length === 0).length,
 
       /*toShelfListings: this.props.listings.map(item => { 
@@ -630,9 +632,11 @@ class ToShelf extends Component {
             tempLocation = this.state.locations.filter(item => item.value.toUpperCase() === fields.location.toUpperCase())[0].id
           }
 
-          this.setState({
+
+
+          /*this.setState({
             toShelfListings: this.state.toShelfListings.filter(item => item.id !== id),
-          })
+          })*/
 
           const myFields = {
             "sku": id,
@@ -649,13 +653,43 @@ class ToShelf extends Component {
 
           }
 
+          let subListings = this.props.listings.filter(item => item.id !== id);
+        
+        let listing = this.props.listings.filter(item => item.id === id);        
+        
+        listing['location'] = myFields.location;
+        listing['title'] = myFields.title;
+        listing['condition'] = myFields.condition;
+        listing['quantity'] = myFields.quantity;
+        listing['pictures'] = myFields.pictures;
+        listing['partNumbers'] = myFields.partNumbers;
+        listing['condition'] = myFields.condition;
+        listing['conditionDescription'] = myFields.conditionDescription;
+        listing['description'] = myFields.description;
+        listing['brand'] = myFields.brand;
+
+        subListings = subListings.concat(listing);
+
           this.setState({
             toShelfListings: [],
             filterListings: "",
+            showAll: false,
           })
 
           this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatetoshelf/' + id + '/' + encodeURIComponent(JSON.stringify(myFields)), 
-          this.state.toShelfListings.filter(item => item.id !== id));
+          subListings, myFields);
+
+          this._onRefresh();
+
+          //this.state.toShelfListings.filter(item => item.id !== id), myFields);
+
+          /*showMessage({
+            message: 'Updated',
+            description: myFields.title,
+            type: 'success',
+            icon: 'auto',
+            duration: 2500,
+          });*/
 
 
       } else {
@@ -675,9 +709,9 @@ class ToShelf extends Component {
           
         }
 
-        let subListings = this.state.toShelfListings.filter(item => item.id !== id);
+        let subListings = this.props.listings.filter(item => item.id !== id);
         
-        let listing = this.state.toShelfListings.filter(item => item.id === id);        
+        let listing = this.props.listings.filter(item => item.id === id);        
         
         listing['title'] = myFields.title;
         listing['condition'] = myFields.condition;
@@ -694,11 +728,23 @@ class ToShelf extends Component {
         this.setState({
           toShelfListings: [],
           filterListings: "",
+          showAll: false,
         })
 
 
         this.props.listingCheckedUpdateDatabase(this.props.urlBase + '/updatetoshelf/' + id + '/' + encodeURIComponent(JSON.stringify(myFields)),
-        subListings);          
+        subListings, myFields);    
+
+        this._onRefresh();
+        
+        /*showMessage({
+          message: 'Updated',
+          description: myFields.title,
+          type: 'success',
+          icon: 'auto',
+          duration: 2500,
+        });*/
+        
       }
 
       //pictures, title, description, conditionDescription, partnumbers, conditionId
@@ -833,12 +879,25 @@ class ToShelf extends Component {
       
       let listingsTemp = this.props.listings.filter(item => item.sku !== id);
 
-      this.props.listingCheckedDeleteDatabase(this.props.urlBase + '/deleteofflinelisting/' + id, listingsTemp)
+      let listingDeleted = this.props.listings.filter(item => item.sku === id)[0];
+
+      this.props.listingCheckedDeleteDatabase(this.props.urlBase + '/deleteofflinelisting/' + id, listingsTemp, listingDeleted)
 
       this.setState({
-        toShelfListings: this.state.toShelfListings.filter(item => item.id !== id),
+        //toShelfListings: this.state.toShelfListings.filter(item => item.id !== id),
+        toShelfListings: [],
+        filterListings: "",
+        showAll: false,
         //totalToShelf: this.props.listings.filter(item => item.location.length === 0).length,
       })
+
+      /*showMessage({
+        message: 'Deleted',
+        description: myFields.title,
+        type: 'danger',
+        icon: 'auto',
+        duration: 2500,
+      });*/
 
     }
 
@@ -911,7 +970,7 @@ class ToShelf extends Component {
         )
         })*/
 
-        this.setState({
+        /*this.setState({
           toShelfListings: this.props.listings.map(item => { 
           return (
             {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers,
@@ -922,9 +981,13 @@ class ToShelf extends Component {
         }).filter(item => item.location.length === 0 && JSON.stringify(item).toLowerCase().includes(this.state.filterListings.toLowerCase())         
         ),
         checkLocation: "",
+        allListings: this.props.listings.map(item => item),
+        })*/
+        this.setState({
+          toShelfListings: [],
+          filterListings: "",
+          showAll: false,
         })
-
-
 
 
 
@@ -937,6 +1000,8 @@ class ToShelf extends Component {
       } else {
         this.setState({
           toShelfListings: [],
+          filterListings: "",
+          showAll: false,
           //totalToShelf: this.props.listings.filter(item => item.location.length === 0).length,
         })
       }
@@ -970,6 +1035,36 @@ class ToShelf extends Component {
 
     }
 
+    _onClickShowAll = () => {
+      this.props.listingCheckedUpdated("");
+      if (!this.state.showAll){
+
+      this.setState({
+        toShelfListings: this.props.listings.map(item => { 
+        return (
+          {key: item.sku, id: item.sku, title: item.title, partNumber: item.partNumbers[0], partNumbers: item.partNumbers,
+            quantity: item.quantity, pictures: item.pictures, location: item.location, conditionDescription: item.conditionDescription,
+            condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition,
+            brand: item.brand  }
+        )
+      }).filter(item => item.location.length === 0
+    
+      
+      ),
+      checkLocation: "",
+      showAll: !this.state.showAll,
+      })
+    } else {
+      this.setState({
+        showAll: !this.state.showAll,
+        toShelfListings: [],
+        filterListings: "",
+      })
+    }
+
+      
+    }
+
     _onEndEditingFilter = () => {
 
         this.props.listingCheckedUpdated("");
@@ -999,6 +1094,7 @@ class ToShelf extends Component {
           checkLocation: "",
           })*/
 
+         
           this.setState({
             toShelfListings: this.props.listings.map(item => { 
             return (
@@ -1007,11 +1103,17 @@ class ToShelf extends Component {
                 condition: conditionOptions.filter(itemCondition => itemCondition.id === item.condition)[0].value, conditionId: item.condition,
                 brand: item.brand  }
             )
-          }).filter(item => item.location.length === 0 && JSON.stringify(item).toLowerCase().includes(this.state.filterListings.toLowerCase())         
+          }).filter(item => item.location.length === 0 && (item.title.toLowerCase().includes(this.state.filterListings.toLowerCase()) || 
+          JSON.stringify(item.partNumbers).toLowerCase().includes(this.state.filterListings.toLowerCase())) 
+        
+          
           ),
           checkLocation: "",
           })
+        
 
+
+        
 
 
 
@@ -1137,10 +1239,19 @@ class ToShelf extends Component {
         <Text style={styles.text} >{this.state.toShelfListings.length} Listings found</Text>
         </View>
         */}
+          <Text style={styles.text} >Products To Shelf</Text>
 
-        <Text style={styles.text} >Products To Shelf</Text>
+        <Text style={styles.text} onPress={() => this._onClickShowAll()      } >
+        {this.props.listings.filter(item => item.location.length === 0).length} Products remaining</Text>
+      
+        { this.state.showAll &&
+          <View>
+            <Text style={styles.quantity}>-- Showing All Products --</Text>
+          </View>
+
+        }
         
-        
+        { !this.state.showAll &&
         <TextInput
           
           /*onSubmitEditing={() => {
@@ -1155,6 +1266,8 @@ class ToShelf extends Component {
           value={this.state.filterListings}
           onEndEditing = {this._onEndEditingFilter}
         />
+        }
+        
           {/*
             this.state.toShelfListings.map(item => {
               return (
@@ -1183,7 +1296,7 @@ class ToShelf extends Component {
         renderItem={this._renderItem}
         extraData={{
           itemChecked: this.props.listingChecked,
-          //listings: this.props.listings,
+          allListings: this.props.listings,
           //toShelfListings: this.state.toShelfListings,
         }}        
         //onRefresh={this.props.listingCheckedIsLoading}
@@ -1375,6 +1488,7 @@ condition: {
         listingCheckedIsLoading: state.listingCheckedIsLoading,
         locations: state.locations,
         brands: state.brands,
+        listingsIsLoading: state.listingsIsLoading,
     };
   };
   
@@ -1386,8 +1500,8 @@ condition: {
       listingCheckedUpdated: (listingChecked) => dispatch(listingCheckedUpdated(listingChecked)),
       locationAddDatabase: (url, id, value) => dispatch(locationAddDatabase(url, id, value)),
       addNewLocation: (newLocation) => dispatch(addNewLocation(newLocation)),
-      listingCheckedUpdateDatabase: (url, listings) => dispatch(listingCheckedUpdateDatabase(url, listings)),
-      listingCheckedDeleteDatabase: (url, listings) => dispatch(listingCheckedDeleteDatabase(url, listings)),
+      listingCheckedUpdateDatabase: (url, listings, listingUpdated) => dispatch(listingCheckedUpdateDatabase(url, listings, listingUpdated)),
+      listingCheckedDeleteDatabase: (url, listings, listingDeleted) => dispatch(listingCheckedDeleteDatabase(url, listings, listingDeleted)),
       listingsUpdate: (listings) => dispatch(listingsUpdate(listings)),
     };
   };

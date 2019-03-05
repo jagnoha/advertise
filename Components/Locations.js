@@ -150,15 +150,23 @@ class Locations extends Component {
     editListing = (id, locationValue) => {
       this.props.listingCheckedUpdated("");
 
-      let tempLocation = '';
+      //let tempLocation = '';
 
       if (locationValue !== ""){
 
           let tempLocations = this.props.locations.filter(item => item.id !== id);
 
+          let oldLocationValue = this.props.locations.filter(item => item.id === id)[0].value;
+
           let newLocations = tempLocations.concat({id: id, value: locationValue});
           
-          this.props.locationUpdateDatabase(this.props.urlBase + '/updatelocation/' + id + '/' + locationValue, newLocations);
+          this.props.locationUpdateDatabase(this.props.urlBase + '/updatelocation/' + id + '/' + locationValue, newLocations, 
+          locationValue, oldLocationValue);
+
+          this.setState({
+            locationsListings: [],
+            filterListings: "",
+          })
 
       } else {
         
@@ -206,7 +214,8 @@ class Locations extends Component {
            )
         
         
-          })
+          }).filter(item => item.locationValue.includes(this.state.filterListings) && isFinite(item.locationValue) && Number(item.locationValue)>1000 ).sort()
+              
         })
 
       } catch(error){
@@ -584,7 +593,7 @@ condition: {
       listingCheckedUpdateDatabase: (url, listings) => dispatch(listingCheckedUpdateDatabase(url, listings)),
       listingCheckedDeleteDatabase: (url, listings) => dispatch(listingCheckedDeleteDatabase(url, listings)),
       listingsUpdate: (listings) => dispatch(listingsUpdate(listings)),
-      locationUpdateDatabase: (url, locations) => dispatch(locationUpdateDatabase(url, locations)),
+      locationUpdateDatabase: (url, locations, locationValue, oldLocationValue) => dispatch(locationUpdateDatabase(url, locations, locationValue, oldLocationValue)),
     };
   };
 

@@ -16,6 +16,7 @@ import Locations from './Components/Locations';
 import configureStore from './modules/configureStore.js';
 import { Provider } from 'react-redux';
 import { Router, Scene, Stack, Tabs } from 'react-native-router-flux';
+import FlashMessage from "react-native-flash-message";
 //import { createStackNavigator } from 'react-navigation';
 
 const store = configureStore();
@@ -39,6 +40,7 @@ export default class App extends Component {
               
               </Stack>
       </Router>
+      <FlashMessage position="top" />
       </Provider>
     );
   }
