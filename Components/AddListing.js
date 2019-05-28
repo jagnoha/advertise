@@ -28,6 +28,7 @@ class AddListing extends Component {
     state = {
         uploadingPicture: false,
         title: "",
+        description: "",
         location: "",
         brand: "",
         brandId: "",
@@ -264,7 +265,8 @@ class AddListing extends Component {
                 "partNumbers": this.state.partNumberList.map(item => item.partNumber),
                 "upc": this.state.upc,
                 "bestOffer": false,
-                "description": this.state.brand + this.checkLot(this.state.sellInLots) + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
+                //"description": this.state.brand + this.checkLot(this.state.sellInLots) + " " + this.state.title + " " + this.state.partNumberList[0].partNumber,
+                "description": this.state.description.length === 0 ? (this.checkLot(this.state.sellInLots) + this.state.brand + " " + this.state.title + " " + this.state.partNumberList[0].partNumber).trim() : this.state.description,
                 "condition": this.state.condition,
                 "conditionDescription": this.state.condition !== '0' ? this.state.conditionDescription.map(item => item).concat(this.state.customConditionDescription) : [],
                 "location": tempLocation === '' ? [] : [tempLocation],
@@ -680,6 +682,21 @@ class AddListing extends Component {
           autoCorrect={false}
         />
 
+        {this.state.title.length > 0 ? <Text style={styles.text} >Description</Text> : <Text></Text>}
+        
+        <TextInput
+            ref={ input => {
+                this.inputs['description'] = input;
+            }}
+            value={this.state.description}
+            style={styles.descriptionInput}
+            placeholder="Enter Description"
+            onChangeText={(description) => this.setState({description})}
+            multiline = {true}
+            numberOfLines = {4}
+            autoCorrect={false}
+        />
+
         {this.state.quantity.length > 0 ? <Text style={styles.text} >Quantity</Text> : <Text></Text>}
 
         <TextInput
@@ -846,6 +863,12 @@ class AddListing extends Component {
     titleInput: {
         margin: 15,
         height: 40,
+        borderColor: '#B7B7B7',
+        borderWidth: 1
+    },
+    descriptionInput: {
+        margin: 15,
+        //height: 40,
         borderColor: '#B7B7B7',
         borderWidth: 1
     },
