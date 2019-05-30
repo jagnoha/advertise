@@ -1,4 +1,4 @@
-export function urlBase(state = "https://e9822fe8.ngrok.io") {
+export function urlBase(state = "https://uaintlserver.ngrok.io") {
     return state
 }
 

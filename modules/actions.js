@@ -3,7 +3,8 @@ import _ from 'lodash';
 import '../helpers.js';
 import { showMessage, hideMessage } from "react-native-flash-message";
 
-const urlBase = 'https://e9822fe8.ngrok.io';
+//const urlBase = 'https://e9822fe8.ngrok.io';
+const urlBase = 'https://uaintlserver.ngrok.io';
 
 
 export function locationsHasErrored(bool){
